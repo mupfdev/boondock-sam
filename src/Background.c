@@ -91,7 +91,7 @@ static SDL_Texture *_RenderLayer(
     return stLayer;
 }
 
-int8_t BackgroundDraw(SDL_Renderer *stRenderer, Background *stBackground)
+int8_t DrawBackground(SDL_Renderer *stRenderer, Background *stBackground)
 {
     int32_t s32Width = 0;
     if (0 != SDL_QueryTexture(stBackground->stLayer, NULL, NULL, &s32Width, NULL))
@@ -151,14 +151,14 @@ int8_t BackgroundDraw(SDL_Renderer *stRenderer, Background *stBackground)
     return 0;
 }
 
-Background *BackgroundInit(SDL_Renderer *stRenderer, const char *pcFilename, int32_t s32WindowWidth)
+Background *InitBackground(SDL_Renderer *stRenderer, const char *pcFilename, int32_t s32WindowWidth)
 {
     static Background *stBackground;
     stBackground = malloc(sizeof(struct Background_t));
 
     if (NULL == stBackground)
     {
-        fprintf(stderr, "BackgroundInit(): error allocating memory.\n");
+        fprintf(stderr, "InitBackground(): error allocating memory.\n");
         return NULL;
     }
 

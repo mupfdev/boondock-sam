@@ -7,7 +7,6 @@ written in C using SDL2 and the
 (Tile Map XML).
 
 Last but not least: follow-on project of
-
 [Rainbow Joe](https://github.com/mupfelofen-de/rainbow-joe) which I do
 not wanna develop any further.
 
