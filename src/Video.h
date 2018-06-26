@@ -13,8 +13,8 @@
  */
 typedef struct Video_t
 {
-    SDL_Renderer *stRenderer;
-    SDL_Window   *stWindow;
+    SDL_Renderer *pstRenderer;
+    SDL_Window   *pstWindow;
     int32_t       s32WindowHeight;
     int32_t       s32WindowWidth;
     double        dZoomLevel;
@@ -28,8 +28,8 @@ Video *InitVideo(
     const uint8_t  u8Fullscreen,
     const double   dZoomLevel);
 
-int8_t SetVideoZoomLevel(Video *stVideo, double dZoomLevel);
-void   TerminateVideo(Video *stVideo);
-void   UpdateVideo(SDL_Renderer *stRenderer);
+int8_t SetVideoZoomLevel(Video *pstVideo, double dZoomLevel);
+void   TerminateVideo(Video *pstVideo);
+void   UpdateVideo(SDL_Renderer *pstRenderer);
 
 #endif

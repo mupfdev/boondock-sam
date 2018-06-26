@@ -15,14 +15,14 @@
  */
 typedef struct Background_t
 {
-    SDL_Texture *stLayer;
+    SDL_Texture *pstLayer;
     uint16_t     u16Flags;
     double       dPosX;
     double       dPosY;
     double       dVelocity;
 } Background;
 
-int8_t      DrawBackground(SDL_Renderer *stRenderer, Background *stBackground);
-Background *InitBackground(SDL_Renderer *stRenderer, const char *pcFilename, int32_t s32WindowWidth);
+int8_t      DrawBackground(SDL_Renderer *pstRenderer, Background *pstBackground);
+Background *InitBackground(SDL_Renderer *pstRenderer, const char *pcFilename, int32_t s32WindowWidth);
 
 #endif

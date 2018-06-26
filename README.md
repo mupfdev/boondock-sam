@@ -52,6 +52,12 @@ To generate the documentation using doxygen enter:
 doxygen
 ```
 
+## Controls
+
+```
+Q: quit
+```
+
 ## License and Credits
 
 This project is licenced under the "THE BEER-WARE LICENCE".  See the

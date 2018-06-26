@@ -10,54 +10,54 @@
 #include "Background.h"
 
 static SDL_Texture *_RenderLayer(
-    SDL_Renderer  *stRenderer,
+    SDL_Renderer  *pstRenderer,
     const char    *pcFilename,
     const int32_t  s32WindowWidth)
 {
-    SDL_Texture *stImage        = NULL;
-    SDL_Texture *stLayer        = NULL;
+    SDL_Texture *pstImage        = NULL;
+    SDL_Texture *pstLayer        = NULL;
     int32_t      s32ImageWidth  = 0;
     int32_t      s32ImageHeight = 0;
     int32_t      s32LayerHeight = 0;
     int32_t      s32LayerWidth  = 0;
     uint8_t      u8WidthFactor  = 0;
 
-    stImage = IMG_LoadTexture(stRenderer, pcFilename);
-    if (NULL == stImage)
+    pstImage = IMG_LoadTexture(pstRenderer, pcFilename);
+    if (NULL == pstImage)
     {
         fprintf(stderr, "%s\n", SDL_GetError());
         return NULL;
     }
 
-    if (0 != SDL_QueryTexture(stImage, NULL, NULL, &s32ImageWidth, &s32ImageHeight))
+    if (0 != SDL_QueryTexture(pstImage, NULL, NULL, &s32ImageWidth, &s32ImageHeight))
     {
         fprintf(stderr, "%s\n", SDL_GetError());
-        SDL_DestroyTexture(stImage);
+        SDL_DestroyTexture(pstImage);
         return NULL;
     }
 
     u8WidthFactor  = ceil((double)s32WindowWidth / (double)s32ImageWidth);
     s32LayerWidth  = s32ImageWidth * u8WidthFactor;
     s32LayerHeight = s32ImageHeight;
-    stLayer        = SDL_CreateTexture(
-        stRenderer,
+    pstLayer        = SDL_CreateTexture(
+        pstRenderer,
         SDL_PIXELFORMAT_ARGB8888,
         SDL_TEXTUREACCESS_TARGET,
         s32LayerWidth,
         s32LayerHeight);
 
-    if (NULL == stLayer)
+    if (NULL == pstLayer)
     {
         fprintf(stderr, "%s\n", SDL_GetError());
-        SDL_DestroyTexture(stImage);
+        SDL_DestroyTexture(pstImage);
         return 0;
     }
 
-    if (0 != SDL_SetRenderTarget(stRenderer, stLayer))
+    if (0 != SDL_SetRenderTarget(pstRenderer, pstLayer))
     {
         fprintf(stderr, "%s\n", SDL_GetError());
-        SDL_DestroyTexture(stLayer);
-        SDL_DestroyTexture(stImage);
+        SDL_DestroyTexture(pstLayer);
+        SDL_DestroyTexture(pstImage);
         return NULL;
     }
 
@@ -68,49 +68,49 @@ static SDL_Texture *_RenderLayer(
         stDst.y  = 0;
         stDst.w  = s32ImageWidth;
         stDst.h  = s32ImageHeight;
-        SDL_RenderCopy(stRenderer, stImage, NULL, &stDst);
+        SDL_RenderCopy(pstRenderer, pstImage, NULL, &stDst);
         stDst.x += s32ImageWidth;
     }
 
-    if (0 != SDL_SetTextureBlendMode(stLayer, SDL_BLENDMODE_BLEND))
+    if (0 != SDL_SetTextureBlendMode(pstLayer, SDL_BLENDMODE_BLEND))
     {
         fprintf(stderr, "%s\n", SDL_GetError());
-        SDL_DestroyTexture(stLayer);
-        SDL_DestroyTexture(stImage);
+        SDL_DestroyTexture(pstLayer);
+        SDL_DestroyTexture(pstImage);
         return NULL;
     }
 
-    if (0 != SDL_SetRenderTarget(stRenderer, NULL))
+    if (0 != SDL_SetRenderTarget(pstRenderer, NULL))
     {
         fprintf(stderr, "%s\n", SDL_GetError());
-        SDL_DestroyTexture(stLayer);
-        SDL_DestroyTexture(stImage);
+        SDL_DestroyTexture(pstLayer);
+        SDL_DestroyTexture(pstImage);
         return NULL;
     }
 
-    return stLayer;
+    return pstLayer;
 }
 
-int8_t DrawBackground(SDL_Renderer *stRenderer, Background *stBackground)
+int8_t DrawBackground(SDL_Renderer *pstRenderer, Background *pstBackground)
 {
     int32_t s32Width = 0;
-    if (0 != SDL_QueryTexture(stBackground->stLayer, NULL, NULL, &s32Width, NULL))
+    if (0 != SDL_QueryTexture(pstBackground->pstLayer, NULL, NULL, &s32Width, NULL))
     {
         fprintf(stderr, "%s\n", SDL_GetError());
         return -1;
     }
 
-    if (stBackground->dPosX < -s32Width)
+    if (pstBackground->dPosX < -s32Width)
     {
-        stBackground->dPosX = +s32Width;
+        pstBackground->dPosX = +s32Width;
     }
 
-    if (stBackground->dPosX > +s32Width)
+    if (pstBackground->dPosX > +s32Width)
     {
-        stBackground->dPosX = -s32Width;
+        pstBackground->dPosX = -s32Width;
     }
 
-    double dPosXa = stBackground->dPosX;
+    double dPosXa = pstBackground->dPosX;
     double dPosXb;
 
     if (dPosXa > 0)
@@ -122,27 +122,27 @@ int8_t DrawBackground(SDL_Renderer *stRenderer, Background *stBackground)
         dPosXb = dPosXa + s32Width;
     }
 
-    if (stBackground->dVelocity > 0)
+    if (pstBackground->dVelocity > 0)
     {
-        if ((stBackground->u16Flags >> BACKGROUND_SCROLL_DIRECTION) & 1)
+        if ((pstBackground->u16Flags >> BACKGROUND_SCROLL_DIRECTION) & 1)
         {
-            stBackground->dPosX += stBackground->dVelocity;
+            pstBackground->dPosX += pstBackground->dVelocity;
         }
         else
         {
-            stBackground->dPosX -= stBackground->dVelocity;
+            pstBackground->dPosX -= pstBackground->dVelocity;
         }
     }
 
-    SDL_Rect stDst = { dPosXa, stBackground->dPosY, s32Width, 192 };
-    if (-1 == SDL_RenderCopyEx(stRenderer, stBackground->stLayer, NULL, &stDst, 0, NULL, SDL_FLIP_NONE))
+    SDL_Rect stDst = { dPosXa, pstBackground->dPosY, s32Width, 192 };
+    if (-1 == SDL_RenderCopyEx(pstRenderer, pstBackground->pstLayer, NULL, &stDst, 0, NULL, SDL_FLIP_NONE))
     {
         fprintf(stderr, "%s\n", SDL_GetError());
         return -1;
     }
 
     stDst.x = dPosXb;
-    if (-1 == SDL_RenderCopyEx(stRenderer, stBackground->stLayer, NULL, &stDst, 0, NULL, SDL_FLIP_NONE))
+    if (-1 == SDL_RenderCopyEx(pstRenderer, pstBackground->pstLayer, NULL, &stDst, 0, NULL, SDL_FLIP_NONE))
     {
         fprintf(stderr, "%s\n", SDL_GetError());
         return -1;
@@ -151,29 +151,29 @@ int8_t DrawBackground(SDL_Renderer *stRenderer, Background *stBackground)
     return 0;
 }
 
-Background *InitBackground(SDL_Renderer *stRenderer, const char *pcFilename, int32_t s32WindowWidth)
+Background *InitBackground(SDL_Renderer *pstRenderer, const char *pcFilename, int32_t s32WindowWidth)
 {
-    static Background *stBackground;
-    stBackground = malloc(sizeof(struct Background_t));
+    static Background *pstBackground;
+    pstBackground = malloc(sizeof(struct Background_t));
 
-    if (NULL == stBackground)
+    if (NULL == pstBackground)
     {
         fprintf(stderr, "InitBackground(): error allocating memory.\n");
         return NULL;
     }
 
-    stBackground->u16Flags = 0;
-    stBackground->stLayer  = _RenderLayer(stRenderer, pcFilename, s32WindowWidth);
+    pstBackground->u16Flags = 0;
+    pstBackground->pstLayer  = _RenderLayer(pstRenderer, pcFilename, s32WindowWidth);
 
-    if (NULL == stBackground->stLayer)
+    if (NULL == pstBackground->pstLayer)
     {
-        free(stBackground);
+        free(pstBackground);
         return NULL;
     }
 
-    stBackground->dPosX     = 0;
-    stBackground->dPosY     = 0;
-    stBackground->dVelocity = 0;
+    pstBackground->dPosX     = 0;
+    pstBackground->dPosY     = 0;
+    pstBackground->dVelocity = 0;
 
-    return stBackground;
+    return pstBackground;
 }

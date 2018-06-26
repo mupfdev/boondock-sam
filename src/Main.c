@@ -17,20 +17,25 @@
 
 static int32_t _s32ExecStatus = EXIT_UNSET;
 
-typedef struct Bundle_t
+/* This structure is used to avoid redundant global variables.  It works
+ * as a carrier between main() and the _MainLoop() function required by
+ * Emscripten.
+ */
+typedef struct MainLoopBundle_t
 {
-    Video  *Window;
-    double  dTimeA;
-    double  dTimeB;
-    double  dDeltaTime;
-} Bundle;
+    Video      *pstVideo;
+    Background *pstBG[5];
+    double      dTimeA;
+    double      dTimeB;
+    double      dDeltaTime;
+} MainLoopBundle;
 
 static void _MainLoop(void *arg)
 {
-    Bundle *Carriage     = (Bundle *)arg;
-    Carriage->dTimeB     = SDL_GetTicks();
-    Carriage->dDeltaTime = (Carriage->dTimeB - Carriage->dTimeA) / 1000;
-    Carriage->dTimeA     = Carriage->dTimeB;
+    MainLoopBundle *pstBundle = (MainLoopBundle *)arg;
+    pstBundle->dTimeB         = SDL_GetTicks();
+    pstBundle->dDeltaTime     = (pstBundle->dTimeB - pstBundle->dTimeA) / 1000;
+    pstBundle->dTimeA         = pstBundle->dTimeB;
 
     const uint8_t *u8KeyState;
     SDL_PumpEvents();
@@ -45,8 +50,22 @@ static void _MainLoop(void *arg)
         _s32ExecStatus = EXIT_SUCCESS;
     }
 
+    pstBundle->pstBG[4]->dVelocity = 100 * pstBundle->dDeltaTime;
+    pstBundle->pstBG[3]->dVelocity = pstBundle->pstBG[4]->dVelocity / 2;
+    pstBundle->pstBG[2]->dVelocity = pstBundle->pstBG[4]->dVelocity / 3;
+    pstBundle->pstBG[1]->dVelocity = pstBundle->pstBG[4]->dVelocity / 4;
+    pstBundle->pstBG[0]->dVelocity = pstBundle->pstBG[4]->dVelocity / 5;
+
+    for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
+    {
+        DrawBackground(
+            pstBundle->pstVideo->pstRenderer,
+            pstBundle->pstBG[u8Index]);
+    }
+    UpdateVideo(pstBundle->pstVideo->pstRenderer);
+
     #ifdef __EMSCRIPTEN__
-    if (EXIT_UNSET != s32ExecStatus)
+    if (EXIT_UNSET != _s32ExecStatus)
     {
         emscripten_cancel_main_loop();
     }
@@ -55,42 +74,82 @@ static void _MainLoop(void *arg)
 
 int32_t main()
 {
-    Video  *stVideo            = NULL;
-    Bundle *stMainLoopCarriage = NULL;
+    Background     *pstBG[5];
+    for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
+    {
+        pstBG[u8Index] = NULL;
+    }
 
-    stVideo = InitVideo("Boondock Sam", 800, 600, 1, 2);
-    if (NULL == stVideo)
+    MainLoopBundle *pstBundle  = NULL;
+    Video          *pstVideo   = NULL;
+    double          dZoomLevel = 1;
+
+    pstVideo = InitVideo("Boondock Sam", 800, 600, 1, 2);
+    if (NULL == pstVideo)
     {
         _s32ExecStatus = EXIT_FAILURE;
         goto quit;
     }
     atexit(SDL_Quit);
 
-    double dZoomLevel = 1 + stVideo->s32WindowHeight / 216; // Background height.
-    SetVideoZoomLevel(stVideo, dZoomLevel);
+    dZoomLevel = 1 + pstVideo->s32WindowHeight / 216; // Background height.
+    SetVideoZoomLevel(pstVideo, dZoomLevel);
 
-    stMainLoopCarriage = malloc(sizeof(struct Bundle_t));
-    if (NULL == stMainLoopCarriage)
+    const char *pcBackgroundList[5] = {
+        "res/backgrounds/plx-1.png",
+        "res/backgrounds/plx-2.png",
+        "res/backgrounds/plx-3.png",
+        "res/backgrounds/plx-4.png",
+        "res/backgrounds/plx-5.png"
+    };
+
+    for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
     {
-        fprintf(stderr, "stMainLoopCarriage: error allocating memory.\n");
+        pstBG[u8Index] = InitBackground(
+            pstVideo->pstRenderer,
+            pcBackgroundList[u8Index],
+            pstVideo->s32WindowWidth);
+
+        if (NULL == pstBG[u8Index])
+        {
+            _s32ExecStatus = EXIT_FAILURE;
+            goto quit;
+        }
+    }
+
+    pstBundle = malloc(sizeof(struct MainLoopBundle_t));
+    if (NULL == pstBundle)
+    {
+        fprintf(stderr, "stBundle: error allocating memory.\n");
         _s32ExecStatus = EXIT_FAILURE;
         goto quit;
     }
 
+    pstBundle->pstVideo = pstVideo;
+    for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
+    {
+        pstBundle->pstBG[u8Index] = pstBG[u8Index];
+    }
+    pstBundle->dTimeA   = SDL_GetTicks();
+
     #ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop_arg(_MainLoop, (void *)stMainLoopCarriage, 60, 1);
+    emscripten_set_main_loop_arg(_MainLoop, (void *)pstBundle, 60, 1);
     #else
     while(1)
     {
-        _MainLoop((void *)stMainLoopCarriage);
+        _MainLoop((void *)pstBundle);
         if (EXIT_UNSET != _s32ExecStatus) goto quit;
         // Limit frames per second.
-        SDL_Delay((1000 / 60) - stMainLoopCarriage->dDeltaTime);
+        SDL_Delay((1000 / 60) - pstBundle->dDeltaTime);
     }
     #endif
 
 quit:
-    free(stMainLoopCarriage);
-    TerminateVideo(stVideo);
+    free(pstBundle);
+    for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
+    {
+        free(pstBG[u8Index]);
+    }
+    TerminateVideo(pstVideo);
     return _s32ExecStatus;
 }

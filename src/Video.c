@@ -28,10 +28,10 @@ Video *InitVideo(
     const uint8_t  u8Fullscreen,
     const double   dZoomLevel)
 {
-    static Video *stVideo;
-    stVideo = malloc(sizeof(struct Video_t));
+    static Video *pstVideo;
+    pstVideo = malloc(sizeof(struct Video_t));
 
-    if (NULL == stVideo)
+    if (NULL == pstVideo)
     {
         fprintf(stderr, "InitVideo(): error allocating memory.\n");
         return NULL;
@@ -40,14 +40,14 @@ Video *InitVideo(
     if (0 != SDL_Init(SDL_INIT_VIDEO))
     {
         fprintf(stderr, "%s\n", SDL_GetError());
-        free(stVideo);
+        free(pstVideo);
         return NULL;
     }
 
-    stVideo->s32WindowHeight  = s32Height;
-    stVideo->s32WindowWidth   = s32Width;
-    stVideo->dZoomLevel       = dZoomLevel;
-    stVideo->dZoomLevelInital = dZoomLevel;
+    pstVideo->s32WindowHeight  = s32Height;
+    pstVideo->s32WindowWidth   = s32Width;
+    pstVideo->dZoomLevel       = dZoomLevel;
+    pstVideo->dZoomLevelInital = dZoomLevel;
 
     uint32_t u32Flags;
     if (u8Fullscreen)
@@ -59,101 +59,101 @@ Video *InitVideo(
         u32Flags = 0;
     }
 
-    stVideo->stWindow = SDL_CreateWindow(
+    pstVideo->pstWindow = SDL_CreateWindow(
         pcTitle,
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
-        stVideo->s32WindowWidth,
-        stVideo->s32WindowHeight,
+        pstVideo->s32WindowWidth,
+        pstVideo->s32WindowHeight,
         u32Flags);
 
-    if (NULL == stVideo->stWindow)
+    if (NULL == pstVideo->pstWindow)
     {
         fprintf(stderr, "%s\n", SDL_GetError());
-        free(stVideo);
+        free(pstVideo);
         return NULL;
     }
 
     if (u8Fullscreen)
     {
-        SDL_GetWindowSize(stVideo->stWindow, &stVideo->s32WindowWidth, &stVideo->s32WindowHeight);
+        SDL_GetWindowSize(pstVideo->pstWindow, &pstVideo->s32WindowWidth, &pstVideo->s32WindowHeight);
         if (0 > SDL_ShowCursor(SDL_DISABLE))
         {
             fprintf(stderr, "%s\n", SDL_GetError());
-            free(stVideo);
+            free(pstVideo);
             return NULL;
         }
     }
 
-    stVideo->stRenderer = SDL_CreateRenderer(
-        stVideo->stWindow,
+    pstVideo->pstRenderer = SDL_CreateRenderer(
+        pstVideo->pstWindow,
         -1,
         SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
 
-    if (NULL == stVideo->stRenderer)
+    if (NULL == pstVideo->pstRenderer)
     {
         fprintf(stderr, "%s\n", SDL_GetError());
-        free(stVideo);
+        free(pstVideo);
         return NULL;
     }
 
     if (0 != SDL_RenderSetLogicalSize(
-            stVideo->stRenderer,
-            stVideo->s32WindowWidth  / dZoomLevel,
-            stVideo->s32WindowHeight / dZoomLevel))
+            pstVideo->pstRenderer,
+            pstVideo->s32WindowWidth  / dZoomLevel,
+            pstVideo->s32WindowHeight / dZoomLevel))
     {
         fprintf(stderr, "%s\n", SDL_GetError());
-        free(stVideo);
+        free(pstVideo);
         return NULL;
     }
 
-    return stVideo;
+    return pstVideo;
 }
 
 /**
  * @brief   Set the renderer's zoom level.
- * @param   stVideo    A Video structure.  See @ref struct Video.
+ * @param   pstVideo   A Video structure.  See @ref struct Video.
  * @param   dZoomLevel the zoom level
  * @ingroup Video
  * @return  0 on success, -1 on failure.
  */
-int8_t SetVideoZoomLevel(Video *stVideo, double dZoomLevel)
+int8_t SetVideoZoomLevel(Video *pstVideo, double dZoomLevel)
 {
     if (dZoomLevel < 1) dZoomLevel = 1;
 
     if (0 != SDL_RenderSetLogicalSize(
-            stVideo->stRenderer,
-            stVideo->s32WindowWidth  / dZoomLevel,
-            stVideo->s32WindowHeight / dZoomLevel))
+            pstVideo->pstRenderer,
+            pstVideo->s32WindowWidth  / dZoomLevel,
+            pstVideo->s32WindowHeight / dZoomLevel))
     {
         fprintf(stderr, "%s\n", SDL_GetError());
         return -1;
     }
 
-    stVideo->dZoomLevel = dZoomLevel;
+    pstVideo->dZoomLevel = dZoomLevel;
 
     return 0;
 }
 
 /**
  * @brief   Terminate video subsystem.
- * @param   stVideo a Video structure.  See @ref struct Video.
+ * @param   pstVideo a Video structure.  See @ref struct Video.
  * @ingroup Video
  */
-void TerminateVideo(Video *stVideo)
+void TerminateVideo(Video *pstVideo)
 {
-    if ((NULL == stVideo->stWindow))
+    if ((NULL == pstVideo->pstWindow))
     {
         fprintf(stderr, "%s\n", SDL_GetError());
     }
 
-    SDL_DestroyRenderer(stVideo->stRenderer);
-    SDL_DestroyWindow(stVideo->stWindow);
-    free(stVideo);
+    SDL_DestroyRenderer(pstVideo->pstRenderer);
+    SDL_DestroyWindow(pstVideo->pstWindow);
+    free(pstVideo);
 }
 
-void UpdateVideo(SDL_Renderer *stRenderer)
+void UpdateVideo(SDL_Renderer *pstRenderer)
 {
-    SDL_RenderPresent(stRenderer);
-    SDL_RenderClear(stRenderer);
+    SDL_RenderPresent(pstRenderer);
+    SDL_RenderClear(pstRenderer);
 }
