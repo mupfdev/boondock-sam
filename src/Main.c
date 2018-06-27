@@ -6,7 +6,9 @@
 #include <SDL2/SDL.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include "AABB.h"
 #include "Background.h"
+#include "Config.h"
 #include "Video.h"
 
 #ifdef __EMSCRIPTEN__
@@ -50,7 +52,7 @@ static void _MainLoop(void *arg)
         _s32ExecStatus = EXIT_SUCCESS;
     }
 
-    pstBundle->pstBG[4]->dVelocity = 100 * pstBundle->dDeltaTime;
+    pstBundle->pstBG[4]->dVelocity = pstBundle->dDeltaTime * 50;
     pstBundle->pstBG[3]->dVelocity = pstBundle->pstBG[4]->dVelocity / 2;
     pstBundle->pstBG[2]->dVelocity = pstBundle->pstBG[4]->dVelocity / 3;
     pstBundle->pstBG[1]->dVelocity = pstBundle->pstBG[4]->dVelocity / 4;
@@ -72,19 +74,35 @@ static void _MainLoop(void *arg)
     #endif
 }
 
-int32_t main()
+int32_t main(int32_t argc, char *argv[])
 {
+    const char *pcConfigFilename;
+    if (argc > 1)
+    {
+        pcConfigFilename = argv[1];
+    }
+    else
+    {
+        pcConfigFilename = "default.ini";
+    }
+
     Background     *pstBG[5];
     for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
     {
         pstBG[u8Index] = NULL;
     }
 
+    Config          stConfig   = InitConfig(pcConfigFilename);
     MainLoopBundle *pstBundle  = NULL;
     Video          *pstVideo   = NULL;
     double          dZoomLevel = 1;
 
-    pstVideo = InitVideo("Boondock Sam", 800, 600, 1, 2);
+    pstVideo = InitVideo(
+        "Boondock Sam",
+        stConfig.stVideo.s32Width,
+        stConfig.stVideo.s32Height,
+        stConfig.stVideo.s8Fullscreen,
+        2);
     if (NULL == pstVideo)
     {
         _s32ExecStatus = EXIT_FAILURE;
@@ -133,14 +151,26 @@ int32_t main()
     pstBundle->dTimeA   = SDL_GetTicks();
 
     #ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop_arg(_MainLoop, (void *)pstBundle, 60, 1);
+    if (stConfig.stVideo.s8LimitFPS)
+    {
+        emscripten_set_main_loop_arg(
+            _MainLoop, (void *)pstBundle, stConfig.stVideo.s8FPS, 1);
+    }
+    else
+    {
+        emscripten_set_main_loop_arg(
+            _MainLoop, (void *)pstBundle, 0, 1);
+    }
     #else
     while(1)
     {
-        _MainLoop((void *)pstBundle);
         if (EXIT_UNSET != _s32ExecStatus) goto quit;
-        // Limit frames per second.
-        SDL_Delay((1000 / 60) - pstBundle->dDeltaTime);
+        _MainLoop((void *)pstBundle);
+
+        if (stConfig.stVideo.s8LimitFPS)
+        {
+            SDL_Delay((1000 / stConfig.stVideo.s8FPS) - pstBundle->dDeltaTime);
+        }
     }
     #endif
 

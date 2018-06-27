@@ -8,7 +8,13 @@
 #include <SDL2/SDL.h>
 #include <stdint.h>
 
-#define BACKGROUND_SCROLL_DIRECTION 0
+/**
+ * @ingroup Background
+ */
+enum BackgroundFlags
+{
+    BACKGROUND_SCROLL_DIRECTION=0
+};
 
 /**
  * @ingroup Background

@@ -93,7 +93,10 @@ static SDL_Texture *_RenderLayer(
 
 int8_t DrawBackground(SDL_Renderer *pstRenderer, Background *pstBackground)
 {
-    int32_t s32Width = 0;
+    int32_t  s32Width = 0;
+    double   dPosXa;
+    double   dPosXb;
+
     if (0 != SDL_QueryTexture(pstBackground->pstLayer, NULL, NULL, &s32Width, NULL))
     {
         fprintf(stderr, "%s\n", SDL_GetError());
@@ -110,9 +113,7 @@ int8_t DrawBackground(SDL_Renderer *pstRenderer, Background *pstBackground)
         pstBackground->dPosX = -s32Width;
     }
 
-    double dPosXa = pstBackground->dPosX;
-    double dPosXb;
-
+    dPosXa = pstBackground->dPosX;
     if (dPosXa > 0)
     {
         dPosXb = dPosXa - s32Width;

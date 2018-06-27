@@ -17,7 +17,7 @@
  * @param   s32Height    the height of the window, in screen coordinates.
  * @param   u8Fullscreen the window's fullscreen state.
  * @param   dZoomLevel   the zoom level used by the renderer.
- * @return  A Video structure or NULL on failure.
+ * @return  A pointer to the Video structure or NULL on failure.
  *          See @ref struct Video.
  * @ingroup Video
  */
@@ -28,7 +28,9 @@ Video *InitVideo(
     const uint8_t  u8Fullscreen,
     const double   dZoomLevel)
 {
+    uint32_t      u32Flags;
     static Video *pstVideo;
+
     pstVideo = malloc(sizeof(struct Video_t));
 
     if (NULL == pstVideo)
@@ -49,7 +51,6 @@ Video *InitVideo(
     pstVideo->dZoomLevel       = dZoomLevel;
     pstVideo->dZoomLevelInital = dZoomLevel;
 
-    uint32_t u32Flags;
     if (u8Fullscreen)
     {
         u32Flags = SDL_WINDOW_FULLSCREEN_DESKTOP;
@@ -76,7 +77,11 @@ Video *InitVideo(
 
     if (u8Fullscreen)
     {
-        SDL_GetWindowSize(pstVideo->pstWindow, &pstVideo->s32WindowWidth, &pstVideo->s32WindowHeight);
+        SDL_GetWindowSize(
+            pstVideo->pstWindow,
+            &pstVideo->s32WindowWidth,
+            &pstVideo->s32WindowHeight);
+
         if (0 > SDL_ShowCursor(SDL_DISABLE))
         {
             fprintf(stderr, "%s\n", SDL_GetError());
@@ -137,7 +142,8 @@ int8_t SetVideoZoomLevel(Video *pstVideo, double dZoomLevel)
 
 /**
  * @brief   Terminate video subsystem.
- * @param   pstVideo a Video structure.  See @ref struct Video.
+ * @param   pstVideo pointer to Video structure.
+ *          See @ref struct Video.
  * @ingroup Video
  */
 void TerminateVideo(Video *pstVideo)
