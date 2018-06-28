@@ -13,7 +13,7 @@
  */
 enum BackgroundFlags
 {
-    BACKGROUND_SCROLL_DIRECTION=0
+    BACKGROUND_SCROLL_DIRECTION = 0
 };
 
 /**

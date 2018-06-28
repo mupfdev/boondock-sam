@@ -3,23 +3,23 @@
 include config.mk
 
 all: $(OBJS)
-	$(CC) $(CFLAGS) $(OBJS) $(LIBS) -o $(PROJECT)
+	$(CC) $(CFLAGS) $(OBJS) $(LIBS) -o $(OUT)
 
 %: %.c
 	$(CC) -c $(CFLAGS) $(LIBS) -o $@ $<
 
-# Emscripten test.
 emscripten:
 	emcc \
-	--emrun \
 	$(SRCS) \
-	-O2 -msse -msse2 \
+	-Os -msse -msse2 \
 	-s USE_SDL=2 \
 	-s USE_SDL_IMAGE=2 \
 	-s SDL2_IMAGE_FORMATS='["png"]' \
 	--preload-file default.ini \
 	--preload-file res \
-	-o html/index.html
+	--separate-asm \
+	--shell-file emscripten/shell.html \
+	-o emscripten/index.html \
 
 clean:
 	rm $(OBJS)

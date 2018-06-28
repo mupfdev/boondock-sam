@@ -2,7 +2,8 @@ TOOLCHAIN=
 #TOOLCHAIN=i686-w64-mingw32
 CC=$(TOOLCHAIN)-cc
 PROJECT=boondock-sam
-#PROJECT=boondock-sam.exe
+OUT=$(PROJECT)
+#OUT=$(PROJECT).exe
 LIBS=\
 	-lSDL2 -lpthread\
 	-lSDL2_image\

@@ -151,16 +151,7 @@ int32_t main(int32_t argc, char *argv[])
     pstBundle->dTimeA   = SDL_GetTicks();
 
     #ifdef __EMSCRIPTEN__
-    if (stConfig.stVideo.s8LimitFPS)
-    {
-        emscripten_set_main_loop_arg(
-            _MainLoop, (void *)pstBundle, stConfig.stVideo.s8FPS, 1);
-    }
-    else
-    {
-        emscripten_set_main_loop_arg(
-            _MainLoop, (void *)pstBundle, 0, 1);
-    }
+    emscripten_set_main_loop_arg(_MainLoop, (void *)pstBundle, 0, 1);
     #else
     while(1)
     {

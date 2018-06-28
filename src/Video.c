@@ -161,5 +161,7 @@ void TerminateVideo(Video *pstVideo)
 void UpdateVideo(SDL_Renderer *pstRenderer)
 {
     SDL_RenderPresent(pstRenderer);
+    #ifndef __EMSCRIPTEN__
     SDL_RenderClear(pstRenderer);
+    #endif
 }
