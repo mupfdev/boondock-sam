@@ -6,6 +6,7 @@
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
 
+#include <stdint.h>
 #include "AABB.h"
 
 /**

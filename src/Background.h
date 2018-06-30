@@ -28,7 +28,13 @@ typedef struct Background_t
     double       dVelocity;
 } Background;
 
-int8_t      DrawBackground(SDL_Renderer *pstRenderer, Background *pstBackground);
-Background *InitBackground(SDL_Renderer *pstRenderer, const char *pcFilename, int32_t s32WindowWidth);
+int8_t DrawBackground(
+    SDL_Renderer *pstRenderer,
+    Background   *pstBackground);
+
+Background *InitBackground(
+    SDL_Renderer *pstRenderer,
+    const char   *pacFilename,
+    int32_t       s32WindowWidth);
 
 #endif

@@ -18,11 +18,11 @@ typedef struct Video_t
     int32_t       s32WindowHeight;
     int32_t       s32WindowWidth;
     double        dZoomLevel;
-    double        dZoomLevelInital;
+    double        dZoomLevelInitial;
 } Video;
 
 Video *InitVideo(
-    const char    *pcTitle,
+    const char    *pacTitle,
     const int32_t  s32Width,
     const int32_t  s32Height,
     const uint8_t  u8Fullscreen,

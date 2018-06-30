@@ -6,12 +6,14 @@
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
 
+#include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <stdint.h>
 #include "Background.h"
 
 static SDL_Texture *_RenderLayer(
     SDL_Renderer  *pstRenderer,
-    const char    *pcFilename,
+    const char    *pacFilename,
     const int32_t  s32WindowWidth)
 {
     SDL_Texture *pstImage        = NULL;
@@ -22,7 +24,7 @@ static SDL_Texture *_RenderLayer(
     int32_t      s32LayerWidth  = 0;
     uint8_t      u8WidthFactor  = 0;
 
-    pstImage = IMG_LoadTexture(pstRenderer, pcFilename);
+    pstImage = IMG_LoadTexture(pstRenderer, pacFilename);
     if (NULL == pstImage)
     {
         fprintf(stderr, "%s\n", SDL_GetError());
@@ -91,7 +93,9 @@ static SDL_Texture *_RenderLayer(
     return pstLayer;
 }
 
-int8_t DrawBackground(SDL_Renderer *pstRenderer, Background *pstBackground)
+int8_t DrawBackground(
+    SDL_Renderer *pstRenderer,
+    Background   *pstBackground)
 {
     int32_t  s32Width = 0;
     double   dPosXa;
@@ -152,7 +156,10 @@ int8_t DrawBackground(SDL_Renderer *pstRenderer, Background *pstBackground)
     return 0;
 }
 
-Background *InitBackground(SDL_Renderer *pstRenderer, const char *pcFilename, int32_t s32WindowWidth)
+Background *InitBackground(
+    SDL_Renderer *pstRenderer,
+    const char   *pacFilename,
+    int32_t       s32WindowWidth)
 {
     static Background *pstBackground;
     pstBackground = malloc(sizeof(struct Background_t));
@@ -164,7 +171,7 @@ Background *InitBackground(SDL_Renderer *pstRenderer, const char *pcFilename, in
     }
 
     pstBackground->u16Flags = 0;
-    pstBackground->pstLayer  = _RenderLayer(pstRenderer, pcFilename, s32WindowWidth);
+    pstBackground->pstLayer  = _RenderLayer(pstRenderer, pacFilename, s32WindowWidth);
 
     if (NULL == pstBackground->pstLayer)
     {

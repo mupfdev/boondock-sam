@@ -9,6 +9,7 @@
 #include "AABB.h"
 #include "Background.h"
 #include "Config.h"
+#include "Map.h"
 #include "Video.h"
 
 #ifdef __EMSCRIPTEN__
@@ -16,16 +17,16 @@
 #endif
 
 #define EXIT_UNSET 2
-
-static int32_t _s32ExecStatus = EXIT_UNSET;
+static  int32_t _s32ExecStatus = EXIT_UNSET;
 
 /* This structure is used to avoid redundant global variables.  It works
- * as a carrier between main() and the _MainLoop() function required by
- * Emscripten.
+ * as a carrier between the main() and the _MainLoop() function which is
+ * required by Emscripten.
  */
 typedef struct MainLoopBundle_t
 {
     Video      *pstVideo;
+    Map        *pstMap;
     Background *pstBG[5];
     double      dTimeA;
     double      dTimeB;
@@ -35,6 +36,7 @@ typedef struct MainLoopBundle_t
 static void _MainLoop(void *arg)
 {
     MainLoopBundle *pstBundle = (MainLoopBundle *)arg;
+    double dZoomLevel         = pstBundle->pstVideo->dZoomLevel;
     pstBundle->dTimeB         = SDL_GetTicks();
     pstBundle->dDeltaTime     = (pstBundle->dTimeB - pstBundle->dTimeA) / 1000;
     pstBundle->dTimeA         = pstBundle->dTimeB;
@@ -52,6 +54,25 @@ static void _MainLoop(void *arg)
         _s32ExecStatus = EXIT_SUCCESS;
     }
 
+    if (u8KeyState[SDL_SCANCODE_0])
+    {
+        SetVideoZoomLevel(
+            pstBundle->pstVideo,
+            pstBundle->pstVideo->dZoomLevelInitial);
+    }
+
+    if (u8KeyState[SDL_SCANCODE_1])
+    {
+        dZoomLevel -= pstBundle->dDeltaTime;
+        SetVideoZoomLevel(pstBundle->pstVideo, dZoomLevel);
+    }
+
+    if (u8KeyState[SDL_SCANCODE_2])
+    {
+        dZoomLevel += pstBundle->dDeltaTime;
+        SetVideoZoomLevel(pstBundle->pstVideo, dZoomLevel);
+    }
+
     pstBundle->pstBG[4]->dVelocity = pstBundle->dDeltaTime * 50;
     pstBundle->pstBG[3]->dVelocity = pstBundle->pstBG[4]->dVelocity / 2;
     pstBundle->pstBG[2]->dVelocity = pstBundle->pstBG[4]->dVelocity / 3;
@@ -64,6 +85,12 @@ static void _MainLoop(void *arg)
             pstBundle->pstVideo->pstRenderer,
             pstBundle->pstBG[u8Index]);
     }
+
+    DrawMap(
+        pstBundle->pstVideo->pstRenderer,
+        pstBundle->pstMap,
+        "Level",
+        1, 0, 0, 0);
     UpdateVideo(pstBundle->pstVideo->pstRenderer);
 
     #ifdef __EMSCRIPTEN__
@@ -74,16 +101,16 @@ static void _MainLoop(void *arg)
     #endif
 }
 
-int32_t main(int32_t argc, char *argv[])
+int32_t main(int32_t s32ArgC, char *pacArgV[])
 {
-    const char *pcConfigFilename;
-    if (argc > 1)
+    const char *pacConfigFilename;
+    if (s32ArgC > 1)
     {
-        pcConfigFilename = argv[1];
+        pacConfigFilename = pacArgV[1];
     }
     else
     {
-        pcConfigFilename = "default.ini";
+        pacConfigFilename = "default.ini";
     }
 
     Background     *pstBG[5];
@@ -92,10 +119,10 @@ int32_t main(int32_t argc, char *argv[])
         pstBG[u8Index] = NULL;
     }
 
-    Config          stConfig   = InitConfig(pcConfigFilename);
+    Config          stConfig   = InitConfig(pacConfigFilename);
     MainLoopBundle *pstBundle  = NULL;
+    Map            *pstMap     = NULL;
     Video          *pstVideo   = NULL;
-    double          dZoomLevel = 1;
 
     pstVideo = InitVideo(
         "Boondock Sam",
@@ -110,10 +137,7 @@ int32_t main(int32_t argc, char *argv[])
     }
     atexit(SDL_Quit);
 
-    dZoomLevel = 1 + pstVideo->s32WindowHeight / 216; // Background height.
-    SetVideoZoomLevel(pstVideo, dZoomLevel);
-
-    const char *pcBackgroundList[5] = {
+    const char *pacBackgroundList[5] = {
         "res/backgrounds/plx-1.png",
         "res/backgrounds/plx-2.png",
         "res/backgrounds/plx-3.png",
@@ -125,7 +149,7 @@ int32_t main(int32_t argc, char *argv[])
     {
         pstBG[u8Index] = InitBackground(
             pstVideo->pstRenderer,
-            pcBackgroundList[u8Index],
+            pacBackgroundList[u8Index],
             pstVideo->s32WindowWidth);
 
         if (NULL == pstBG[u8Index])
@@ -133,6 +157,13 @@ int32_t main(int32_t argc, char *argv[])
             _s32ExecStatus = EXIT_FAILURE;
             goto quit;
         }
+    }
+
+    pstMap = InitMap("res/maps/demo.tmx", "res/tilesets/jungle.png");
+    if (NULL == pstMap)
+    {
+        _s32ExecStatus = EXIT_FAILURE;
+        goto quit;
     }
 
     pstBundle = malloc(sizeof(struct MainLoopBundle_t));
@@ -144,6 +175,7 @@ int32_t main(int32_t argc, char *argv[])
     }
 
     pstBundle->pstVideo = pstVideo;
+    pstBundle->pstMap   = pstMap;
     for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
     {
         pstBundle->pstBG[u8Index] = pstBG[u8Index];
@@ -167,6 +199,7 @@ int32_t main(int32_t argc, char *argv[])
 
 quit:
     free(pstBundle);
+    FreeMap(pstMap);
     for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
     {
         free(pstBG[u8Index]);

@@ -6,13 +6,15 @@
  * @copyright "THE BEER-WARE LICENCE" (Revision 42)
  */
 
+#include <SDL2/SDL.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "Video.h"
 
 /**
  * @brief   Initialise video subsystem.
- * @param   pcTitle      the title of the window, in UTF-8 encoding.
+ * @param   pacTitle     the title of the window, in UTF-8 encoding.
  * @param   s32Width     the width of the window, in screen coordinates.
  * @param   s32Height    the height of the window, in screen coordinates.
  * @param   u8Fullscreen the window's fullscreen state.
@@ -22,7 +24,7 @@
  * @ingroup Video
  */
 Video *InitVideo(
-    const char    *pcTitle,
+    const char    *pacTitle,
     const int32_t  s32Width,
     const int32_t  s32Height,
     const uint8_t  u8Fullscreen,
@@ -46,10 +48,10 @@ Video *InitVideo(
         return NULL;
     }
 
-    pstVideo->s32WindowHeight  = s32Height;
-    pstVideo->s32WindowWidth   = s32Width;
-    pstVideo->dZoomLevel       = dZoomLevel;
-    pstVideo->dZoomLevelInital = dZoomLevel;
+    pstVideo->s32WindowHeight   = s32Height;
+    pstVideo->s32WindowWidth    = s32Width;
+    pstVideo->dZoomLevel        = dZoomLevel;
+    pstVideo->dZoomLevelInitial = dZoomLevel;
 
     if (u8Fullscreen)
     {
@@ -61,7 +63,7 @@ Video *InitVideo(
     }
 
     pstVideo->pstWindow = SDL_CreateWindow(
-        pcTitle,
+        pacTitle,
         SDL_WINDOWPOS_UNDEFINED,
         SDL_WINDOWPOS_UNDEFINED,
         pstVideo->s32WindowWidth,

@@ -14,14 +14,14 @@
 
 static int32_t _Handler(
     void* pConfig,
-    const char *pcSection,
-    const char *pcName,
-    const char *pcValue)
+    const char *pacSection,
+    const char *pacName,
+    const char *pacValue)
 {
     Config  *pstConfig = (Config*)pConfig;
-    int32_t  s32Value  = atoi(pcValue);
+    int32_t  s32Value  = atoi(pacValue);
 
-    #define MATCH(pcS, pcN) strcmp(pcSection, pcS) == 0 && strcmp(pcName, pcN) == 0
+    #define MATCH(pacS, pacN) strcmp(pacSection, pacS) == 0 && strcmp(pacName, pacN) == 0
 
     if      (MATCH("Video", "width"))      { pstConfig->stVideo.s32Width     = s32Value; }
     else if (MATCH("Video", "height"))     { pstConfig->stVideo.s32Height    = s32Value; }
@@ -38,13 +38,13 @@ static int32_t _Handler(
 
 /**
  * @brief   Initialise configuration file.
- * @param   pcFilename the configuration file to load.
+ * @param   pacFilename the configuration file to load.
  * @return  Always a Config structure, error message on failure.
  *          It is important to define a fallback in the main program.
  *          See @ref struct Config.
  * @ingroup Config
  */
-Config InitConfig(const char *pcFilename)
+Config InitConfig(const char *pacFilename)
 {
     static Config stConfig;
 
@@ -54,9 +54,9 @@ Config InitConfig(const char *pcFilename)
     stConfig.stVideo.s8FPS         =  60;
     stConfig.stVideo.s8LimitFPS    =   1;
 
-    if (0 > ini_parse(pcFilename, _Handler, &stConfig))
+    if (0 > ini_parse(pacFilename, _Handler, &stConfig))
     {
-        fprintf(stderr, "Couldn't load configuration file: %s\n", pcFilename);
+        fprintf(stderr, "Couldn't load configuration file: %s\n", pacFilename);
     }
 
     if (0 > stConfig.stVideo.s8FPS)     { stConfig.stVideo.s8FPS     = abs(stConfig.stVideo.s8FPS);     }

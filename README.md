@@ -56,6 +56,9 @@ doxygen
 
 ```
 Q: quit
+0: set default zoom level
+1: zoom out
+2: zoom in
 ```
 
 ## License and Credits
