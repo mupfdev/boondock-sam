@@ -1,0 +1,5 @@
+boondock-sam
+*.o
+*.exe
+*.dll
+*.lib
