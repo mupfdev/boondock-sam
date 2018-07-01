@@ -11,6 +11,15 @@
 /**
  * @ingroup Video
  */
+enum VideoLimits
+{
+    VIDEO_MIN_ZOOMLEVEL = 1,
+    VIDEO_MAX_ZOOMLEVEL = 4
+};
+
+/**
+ * @ingroup Video
+ */
 typedef struct Video_t
 {
     SDL_Renderer *pstRenderer;

@@ -126,7 +126,8 @@ Video *InitVideo(
  */
 int8_t SetVideoZoomLevel(Video *pstVideo, double dZoomLevel)
 {
-    if (dZoomLevel < 1) dZoomLevel = 1;
+    if (dZoomLevel <= VIDEO_MIN_ZOOMLEVEL) dZoomLevel = VIDEO_MIN_ZOOMLEVEL;
+    if (dZoomLevel >= VIDEO_MAX_ZOOMLEVEL) dZoomLevel = VIDEO_MAX_ZOOMLEVEL;
 
     if (0 != SDL_RenderSetLogicalSize(
             pstVideo->pstRenderer,
