@@ -33,7 +33,7 @@ EMSCRIPTEN=\
 	-s USE_SDL_IMAGE=2 \
 	-s SDL2_IMAGE_FORMATS='["png"]' \
 	-s USE_ZLIB=1 \
-	--preload-file default.ini \
+	--preload-file windowed.ini \
 	--preload-file res \
 	--shell-file emscripten/shell.html\
 	-o emscripten/index.html

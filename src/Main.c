@@ -140,7 +140,11 @@ int32_t main(int32_t s32ArgC, char *pacArgV[])
     }
     else
     {
+        #ifndef __EMSCRIPTEN__
         pacConfigFilename = "default.ini";
+        #else
+        pacConfigFilename = "windowed.ini";
+        #endif
     }
 
     Background     *pstBG[5];
