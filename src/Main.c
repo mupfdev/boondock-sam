@@ -102,6 +102,11 @@ static void _MainLoop(void *pArg)
     // Render scene.
     for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
     {
+        pstBundle->pstBG[u8Index]->dWorldPosY =
+            pstBundle->pstVideo->s32WindowHeight -
+            pstBundle->pstBG[u8Index]->s32Height /
+            pstBundle->pstVideo->dZoomLevel;
+
         DrawBackground(
             pstBundle->pstVideo->pstRenderer,
             pstBundle->pstBG[u8Index]);
@@ -199,9 +204,6 @@ int32_t main(int32_t s32ArgC, char *pacArgV[])
             _s32ExecStatus = EXIT_FAILURE;
             goto quit;
         }
-
-        pstBG[u8Index]->dWorldPosY =
-            (pstMap->u32Height - pstBG[u8Index]->s32Height);
     }
 
     pstBundle->pstVideo       = pstVideo;
