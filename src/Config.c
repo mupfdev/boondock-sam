@@ -1,4 +1,5 @@
-/** @file config.c
+/**
+ * @file      config.c
  * @ingroup   Config
  * @defgroup  Config
  * @brief     Configuration file manager.
@@ -37,11 +38,9 @@ static int32_t _Handler(
 }
 
 /**
- * @brief   Initialise configuration file.
- * @param   pacFilename the configuration file to load.
- * @return  Always a Config structure, error message on failure.
- *          It is important to define a fallback in the main program.
- *          See @ref struct Config.
+ * @brief
+ * @param
+ * @return
  * @ingroup Config
  */
 Config InitConfig(const char *pacFilename)

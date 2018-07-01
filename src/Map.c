@@ -15,22 +15,16 @@
 #include "Map.h"
 
 /**
- * @brief   Draw map on screen.
- * @param   pstRenderer        SDL's rendering context.
- *                             See @ref struct Video.
- * @param   pstMap             the map that should be rendered.
- * @param   pacLayerName       substring of the layer name(s) that
- *                             should be rendered.
- * @param   u8RenderBackground boolean value to determine if the map's
- *                             background colour should be rendered or
- *                             not.  If set to 0, the background stays
- *                             transparent.
- * @param   u8Index            determine the texture index.  The total
- *                             amount of textures per map is defined by
- *                             the constant MAP_MAX_LAYERS.
- * @param   dCameraPosX        camera position along the x-axis.
- * @param   dCameraPosY        camera position along the y-axis.
- * @return  0 on success, -1 on error.
+ * @brief   Draw map.
+ * @param   pstRenderer  a SDL rendering context.
+ *          See @ref struct Video.
+ * @param   pstMap             
+ * @param   pacLayerName       
+ * @param   u8RenderBackground 
+ * @param   u8Index            
+ * @param   dCameraPosX        
+ * @param   dCameraPosY        
+ * @return  
  * @ingroup Map
  */
 int8_t DrawMap(
@@ -161,8 +155,8 @@ int8_t DrawMap(
 }
 
 /**
- * @brief   Free map.
- * @param   pstMap the Map that should be freed.  See @ref struct Map.
+ * @brief   
+ * @param   pstMap 
  * @ingroup Map
  */
 void FreeMap(Map *pstMap)
@@ -173,11 +167,10 @@ void FreeMap(Map *pstMap)
 }
 
 /**
- * @brief   Initialise map.
- * @param   pacFilename             the TMX map file to load.
- * @param   pacTilesetImageFilename the image used as tileset.
- * @return  A pointer to the Map structure on success, NULL on error.
- *          See @ref struct Map.
+ * @brief   
+ * @param   pacFilename             
+ * @param   pacTilesetImageFilename 
+ * @return  
  * @ingroup Map
  */
 Map  *InitMap(
@@ -226,13 +219,13 @@ Map  *InitMap(
     return pstMap;
 }
 
-/*
- * @brief   Check whether a map tile is from a specific type or not.
- * @param   pstMap  the map.
- * @param   pacType name of the tile type to look for.
- * @param   dPosX   coordinate along the x-axis.
- * @param   dPosY   coordinate along the y-axis.
- * @return  1 if the tile is of the specific type, 0 if not.
+/**
+ * @brief   
+ * @param   pstMap  
+ * @param   pacType 
+ * @param   dPosX   
+ * @param   dPosY   
+ * @return  
  * @ingroup Map
  */
 uint8_t IsMapCoordOfType(

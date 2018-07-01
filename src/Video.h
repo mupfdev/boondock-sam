@@ -1,4 +1,5 @@
-/** @file Video.h
+/**
+ * @file    Video.h
  * @ingroup Video
  */
 

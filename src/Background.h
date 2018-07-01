@@ -1,4 +1,5 @@
-/** @file Background.h
+/**
+ * @file    Background.h
  * @ingroup Background
  */
 
@@ -23,8 +24,10 @@ typedef struct Background_t
 {
     SDL_Texture *pstLayer;
     uint16_t     u16Flags;
-    double       dPosX;
-    double       dPosY;
+    int32_t      s32Width;
+    int32_t      s32Height;
+    double       dWorldPosX;
+    double       dWorldPosY;
     double       dVelocity;
 } Background;
 

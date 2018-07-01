@@ -1,4 +1,5 @@
-/** @file Entity.c
+/**
+ * @file      Entity.c
  * @ingroup   Entity
  * @defgroup  Entity
  * @brief     Entity handler to manage all entities such as players,
@@ -15,12 +16,75 @@
 #include "Entity.h"
 
 /**
- * @brief   Initialise entity.
- * @param   u8Height height in pixel.
- * @param   u8Width  width in pixel.
- * @param   dPosX    the initial position along the x-axis.
- * @param   dPosY    the initial position along the y-axis.
- * @return  Entity on success, NULL on error.  See @ref struct Entity.
+ * @brief   
+ * @param   
+ * @param   
+ * @param   
+ * @param   
+ * @return  
+ * @ingroup Entity
+ */
+int8_t DrawEntity(
+    SDL_Renderer *pstRenderer,
+    Entity       *pstEntity,
+    double        dCameraPosX,
+    double        dCameraPosY)
+{
+    double           dRenderPosX;
+    double           dRenderPosY;
+    SDL_Rect         stDst;
+    SDL_Rect         stSrc;
+    SDL_RendererFlip s8Flip;
+
+    if (NULL == pstEntity->pstSprite)
+    {
+        fprintf(stderr, "%s\n", SDL_GetError());
+        return -1;
+    }
+
+    dRenderPosX  = pstEntity->dWorldPosX - dCameraPosX;
+    dRenderPosY = pstEntity->dWorldPosY - dCameraPosY;
+    stDst.x      = dRenderPosX;
+    stDst.y      = dRenderPosY;
+    stDst.w      = pstEntity->u8Width;
+    stDst.h      = pstEntity->u8Height;
+    stSrc.x      = pstEntity->u8Frame * pstEntity->u8Width;
+    stSrc.y      = 0;
+    stSrc.w      = pstEntity->u8Width;
+    stSrc.h      = pstEntity->u8Width;
+
+    if ((pstEntity->u16Flags >> ENTITY_DIRECTION) & 1)
+    {
+        s8Flip = SDL_FLIP_HORIZONTAL;
+    }
+    else
+    {
+        s8Flip = SDL_FLIP_NONE;
+    }
+
+    if (-1 == SDL_RenderCopyEx(
+            pstRenderer,
+            pstEntity->pstSprite,
+            &stSrc,
+            &stDst,
+            0,
+            NULL,
+            s8Flip))
+    {
+        fprintf(stderr, "%s\n", SDL_GetError());
+        return -1;
+    }
+
+    return 0;
+}
+
+/**
+ * @brief   
+ * @param   u8Height 
+ * @param   u8Width  
+ * @param   dPosX    
+ * @param   dPosY    
+ * @return  
  * @ingroup Entity
  */
 Entity *InitEntity(
@@ -46,6 +110,7 @@ Entity *InitEntity(
     pstEntity->dWorldPosX        = dPosX;
     pstEntity->dWorldPosY        = dPosY;
 
+    pstEntity->u8Frame           =   0;
     pstEntity->stBB.dBottom      =   0;
     pstEntity->stBB.dLeft        = u8Height;
     pstEntity->stBB.dRight       = u8Width;
@@ -60,8 +125,36 @@ Entity *InitEntity(
 }
 
 /**
- * @brief   Respawn entity.
- * @param   pstEntity the entity to respawn.  See @ref struct Entity.
+ * @brief   
+ * @param   pstEntity   
+ * @param   pstRenderer 
+ * @param   pacFileName 
+ * @return  
+ * @ingroup Entity
+ */
+int8_t LoadEntitySprite(
+    Entity       *pstEntity,
+    SDL_Renderer *pstRenderer,
+    const char   *pacFilename)
+{
+    if (NULL != pstEntity->pstSprite)
+    {
+        SDL_DestroyTexture(pstEntity->pstSprite);
+    }
+
+    pstEntity->pstSprite = IMG_LoadTexture(pstRenderer, pacFilename);
+    if (NULL == pstEntity->pstSprite)
+    {
+        fprintf(stderr, "%s\n", SDL_GetError());
+        return -1;
+    }
+
+    return 0;
+}
+
+/**
+ * @brief   
+ * @param   pstEntity 
  * @ingroup Entity
  */
 void RespawnEntity(Entity *pstEntity)
@@ -71,3 +164,16 @@ void RespawnEntity(Entity *pstEntity)
     pstEntity->dWorldPosX  = pstEntity->dInitialWorldPosX;
     pstEntity->dWorldPosY  = pstEntity->dInitialWorldPosY;
 }
+
+/*
+ * @brief   
+ * @param   pstEentity 
+ * @param   dDeltaTime 
+ * @ingroup Entity
+ *
+void UpdateEntity(
+    Entity *pstEntity,
+    double dDeltaTime)
+{
+
+}*/

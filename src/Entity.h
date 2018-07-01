@@ -38,6 +38,7 @@ typedef struct Entity_t
      * volatile values and usually do not have to be changed
      * manually. */
     AABB         stBB;
+    uint8_t      u8Frame;
     double       dInitialWorldPosX;
     double       dInitialWorldPosY;
     SDL_Texture *pstSprite;
@@ -45,12 +46,27 @@ typedef struct Entity_t
     double       dVelocityY;
 } Entity;
 
+int8_t DrawEntity(
+    SDL_Renderer *pstRenderer,
+    Entity       *pstEntity,
+    double        dCameraPosX,
+    double        dCameraPosY);
+
 Entity *InitEntity(
     const uint8_t u8Height,
     const uint8_t u8Width,
     const double  dPosX,
     const double  dPosY);
 
-void    RespawnEntity(Entity *pstEntity);
+int8_t LoadEntitySprite(
+    Entity       *pstEntity,
+    SDL_Renderer *pstrenderer,
+    const char   *pacFilename);
+
+void RespawnEntity(Entity *pstEntity);
+
+void UpdateEntity(
+    Entity *pstEntity,
+    double dDeltaTime);
 
 #endif
