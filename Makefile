@@ -24,5 +24,5 @@ emscripten:
 	-o emscripten/index.html \
 
 clean:
-	rm $(OBJS)
-	rm $(PROJECT)
+	rm -f $(OBJS)
+	rm -f $(PROJECT)
