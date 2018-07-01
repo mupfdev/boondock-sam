@@ -47,6 +47,13 @@ If you're on NixOS enter:
 nix-shell --command make
 ```
 
+Due libxml2 isn't available via
+[emscripten-ports](https://github.com/emscripten-ports), the Emscripten
+support is in an experimental stage:
+```
+make emscripten
+```
+
 To generate the documentation using doxygen enter:
 ```
 doxygen
