@@ -99,6 +99,11 @@ static void _MainLoop(void *pArg)
         pstBundle->dCameraPosY = pstBundle->dCameraMaxPosY;
     }
 
+    // Fix map background rendering when using Emscripten.
+    #ifdef __EMSCRIPTEN__
+    SDL_RenderClear(pstBundle->pstVideo->pstRenderer);
+    #endif
+
     // Render scene.
     for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
     {
