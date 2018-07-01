@@ -21,7 +21,7 @@ CFLAGS=\
 	-D_REENTRANT\
 	-DSDL_MAIN_HANDLED\
 	-DWANT_ZLIB\
-	-I/usr/$(TOOLCHAIN)/include/libxml2\
+	-isystem /usr/$(TOOLCHAIN)/include/libxml2\
 	-O2\
 	-pedantic-errors\
 	-std=c99\
