@@ -15,23 +15,25 @@
 #include "Map.h"
 
 /**
- * @brief   Draw map.
- * @param   pstRenderer  a SDL rendering context.
- *          See @ref struct Video.
- * @param   pstMap             
- * @param   pacLayerName       
- * @param   u8RenderBackground 
- * @param   u8Index            
- * @param   dCameraPosX        
- * @param   dCameraPosY        
- * @return  
+ * @brief   Draw Map.
+ * @param   pstRenderer      a SDL rendering context.  See @ref struct Video.
+ * @param   pstMap           the Map.  See @ref struct Map.
+ * @param   pacLayerName     substring of the layer(s) to render.
+ * @param   u8RenderBgColour a boolean value to set whether the background
+ *                           colour should be rendered or not.
+ * @param   u8Index          the layer index.  The total amount of layers per map
+ *                           is defined by MAP_MAX_LAYERS.  Not to confused with
+                             the layers used by Tiled which can be grouped by name.
+ * @param   dCameraPosX      camera position along the x-axis.
+ * @param   dCameraPosY      camera position along the y-axis.
+ * @return  0 on success, -1 on failure.
  * @ingroup Map
  */
 int8_t DrawMap(
     SDL_Renderer  *pstRenderer,
     Map           *pstMap,
     const char    *pacLayerName,
-    const uint8_t  u8RenderBackground,
+    const uint8_t  u8RenderBgColour,
     const uint8_t  u8Index,
     const double   dCameraPosX,
     const double   dCameraPosY)
@@ -95,7 +97,7 @@ int8_t DrawMap(
         return -1;
     }
 
-    if (u8RenderBackground)
+    if (u8RenderBgColour)
     {
         SDL_SetRenderDrawColor(
             pstRenderer,
@@ -155,8 +157,8 @@ int8_t DrawMap(
 }
 
 /**
- * @brief   
- * @param   pstMap 
+ * @brief   Free Map from memory.
+ * @param   pstMap a Map.  See @ref struct Map.
  * @ingroup Map
  */
 void FreeMap(Map *pstMap)
@@ -167,13 +169,13 @@ void FreeMap(Map *pstMap)
 }
 
 /**
- * @brief   
- * @param   pacFilename             
- * @param   pacTilesetImageFilename 
- * @return  
+ * @brief   Initialise Map.
+ * @param   pacFilename             the filename of the TMX map.
+ * @param   pacTilesetImageFilename the filename of the tileset image.
+ * @return  a Map on success, NULL on failure.
  * @ingroup Map
  */
-Map  *InitMap(
+Map *InitMap(
     const char *pacFilename,
     const char *pacTilesetImageFilename)
 {
@@ -220,12 +222,12 @@ Map  *InitMap(
 }
 
 /**
- * @brief   
- * @param   pstMap  
- * @param   pacType 
- * @param   dPosX   
- * @param   dPosY   
- * @return  
+ * @brief   Check whether a map tile is of a specific type.
+ * @param   pstMap  a Map.  See @ref struct Map.
+ * @param   pacType the name of the type.
+ * @param   dPosX   position along the x-axis.
+ * @param   dPosY   position along the y-axis.
+ * @return  1 if tile is of specific type, 0 if not.
  * @ingroup Map
  */
 uint8_t IsMapCoordOfType(

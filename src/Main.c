@@ -120,9 +120,18 @@ static void _MainLoop(void *pArg)
     DrawMap(
         pstBundle->pstVideo->pstRenderer,
         pstBundle->pstMap,
-        "World",
+        "Background",
         1,
         0,
+        pstBundle->dCameraPosX,
+        pstBundle->dCameraPosY);
+
+    DrawMap(
+        pstBundle->pstVideo->pstRenderer,
+        pstBundle->pstMap,
+        "World",
+        0,
+        1,
         pstBundle->dCameraPosX,
         pstBundle->dCameraPosY);
 
@@ -152,16 +161,16 @@ int32_t main(int32_t s32ArgC, char *pacArgV[])
         #endif
     }
 
-    Background     *pstBG[5];
+    Background *pstBG[5];
     for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
     {
         pstBG[u8Index] = NULL;
     }
 
-    Config          stConfig    = InitConfig(pacConfigFilename);
-    MainLoopBundle *pstBundle   = NULL;
-    Map            *pstMap      = NULL;
-    Video          *pstVideo    = NULL;
+    Config          stConfig  = InitConfig(pacConfigFilename);
+    MainLoopBundle *pstBundle = NULL;
+    Map            *pstMap    = NULL;
+    Video          *pstVideo  = NULL;
 
     pstVideo = InitVideo(
         "Boondock Sam",

@@ -14,13 +14,13 @@
 #include "Video.h"
 
 /**
- * @brief
- * @param   pacTitle
- * @param   s32Width
- * @param   s32Height
- * @param   u8Fullscreen
- * @param   dZoomLevel
- * @return
+ * @brief   Initialise Video subsystem.
+ * @param   pacTitle     the name of the window.
+ * @param   s32Width     window width.
+ * @param   s32Height    window height.
+ * @param   u8Fullscreen boolean value to set fullscreen state.
+ * @param   dZoomLevel   the initial zoom level.
+ * @return  Video on success, NULL on failure.  See @ref struct Video.
  * @ingroup Video
  */
 Video *InitVideo(
@@ -118,9 +118,9 @@ Video *InitVideo(
 }
 
 /**
- * @brief
- * @param   pstVideo
- * @param   dZoomLevel
+ * @brief   Set Video zoom level.
+ * @param   pstVideo   Video.  See @ref struct Video.
+ * @param   dZoomLevel the zoom level.
  * @ingroup Video
  * @return
  */
@@ -144,8 +144,8 @@ int8_t SetVideoZoomLevel(Video *pstVideo, double dZoomLevel)
 }
 
 /**
- * @brief
- * @param   pstVideo
+ * @brief   Terminate Video subsystem.
+ * @param   pstVideo Video.  See @ref struct Video.
  * @ingroup Video
  */
 void TerminateVideo(Video *pstVideo)

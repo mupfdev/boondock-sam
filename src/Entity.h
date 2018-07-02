@@ -63,7 +63,7 @@ int8_t LoadEntitySprite(
     SDL_Renderer *pstrenderer,
     const char   *pacFilename);
 
-void RespawnEntity(Entity *pstEntity);
+void ResurrectEntity(Entity *pstEntity);
 
 void UpdateEntity(
     Entity *pstEntity,

@@ -12,14 +12,6 @@
 #include <stdint.h>
 #include "Background.h"
 
-/**
- * @brief
- * @param   pstRenderer
- * @param   pacFilename
- * @param   s32WindowWidth
- * @return
- * @ingroup Background
- */
 static SDL_Texture *_RenderLayer(
     SDL_Renderer  *pstRenderer,
     const char    *pacFilename,
@@ -103,10 +95,10 @@ static SDL_Texture *_RenderLayer(
 }
 
 /**
- * @brief
- * @param   pstRenderer
- * @param   pstBackground
- * @return
+ * @brief   Draw Background on screen.
+ * @param   pstRenderer   a SDL rendering context.  See @ref struct Video.
+ * @param   pstBackground the Background to render.  See @ref struct Background.
+ * @return  0 on success, -1 on failure.
  * @ingroup Background
  */
 int8_t DrawBackground(
@@ -173,11 +165,11 @@ int8_t DrawBackground(
 }
 
 /**
- * @brief
- * @param   pstRenderer
- * @param   pacFilename
- * @param   s32WindowWidth
- * @return
+ * @brief   Initialise Background.
+ * @param   pstRenderer    a SDL rendering context.  See @ref struct Video.
+ * @param   pacFilename    the filename of the image.
+ * @param   s32WindowWidth the width of the window.  See @ref struct Video.
+ * @return  a Background on success, NULL on failure.
  * @ingroup Background
  */
 Background *InitBackground(

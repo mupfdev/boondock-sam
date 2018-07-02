@@ -16,12 +16,12 @@
 #include "Entity.h"
 
 /**
- * @brief   
- * @param   
- * @param   
- * @param   
- * @param   
- * @return  
+ * @brief   Draw Entity on screen.
+ * @param   pstRenderer a SDL rendering context.  See @ref struct Video.
+ * @param   pstEntity   an Entity.  See @ref struct Entity.
+ * @param   dCameraPosX the camera position along the x-axis.
+ * @param   dCameraPosY the camera position along the y-axis.
+ * @return  0 on success, -1 on failure.
  * @ingroup Entity
  */
 int8_t DrawEntity(
@@ -79,12 +79,12 @@ int8_t DrawEntity(
 }
 
 /**
- * @brief   
- * @param   u8Height 
- * @param   u8Width  
- * @param   dPosX    
- * @param   dPosY    
- * @return  
+ * @brief   Initialise Entity.
+ * @param   u8Height height of the Entity in pixel.
+ * @param   u8Width  width  of the Entity in pixel.
+ * @param   dPosX    initial world position along the x-axis.
+ * @param   dPosY    initial world position along the y-axis.
+ * @return  an Entity on success, NULL on failure.
  * @ingroup Entity
  */
 Entity *InitEntity(
@@ -125,11 +125,11 @@ Entity *InitEntity(
 }
 
 /**
- * @brief   
- * @param   pstEntity   
- * @param   pstRenderer 
- * @param   pacFileName 
- * @return  
+ * @brief   Load the Entity's sprite image.
+ * @param   pstEntity   an Entity.  See @ref struct Entity.
+ * @param   pstRenderer a SDL rendering context.  See @ref struct Video.
+ * @param   pacFilename the filename of the image.
+ * @return  0 on success, -1 on failure.
  * @ingroup Entity
  */
 int8_t LoadEntitySprite(
@@ -153,11 +153,11 @@ int8_t LoadEntitySprite(
 }
 
 /**
- * @brief   
- * @param   pstEntity 
+ * @brief   Resurrect Entity.
+ * @param   pstEntity an Entity.  See @ref struct Entity.
  * @ingroup Entity
  */
-void RespawnEntity(Entity *pstEntity)
+void ResurrectEntity(Entity *pstEntity)
 {
     pstEntity->u16Flags   &= ~(1 << ENTITY_IS_DEAD);
     pstEntity->u16Flags   &= ~(1 << ENTITY_IS_IN_MOTION);

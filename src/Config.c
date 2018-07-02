@@ -38,9 +38,9 @@ static int32_t _Handler(
 }
 
 /**
- * @brief
- * @param
- * @return
+ * @brief   Initialise Config.
+ * @param   pacFilename the filename of the configuration file.
+ * @return  Always Config.  See @ref struct Config.
  * @ingroup Config
  */
 Config InitConfig(const char *pacFilename)
