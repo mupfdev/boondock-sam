@@ -18,6 +18,7 @@ enum BackgroundFlags
 };
 
 /**
+ * @file    Background.h
  * @ingroup Background
  */
 typedef struct Background_t
@@ -33,7 +34,8 @@ typedef struct Background_t
 
 int8_t DrawBackground(
     SDL_Renderer *pstRenderer,
-    Background   *pstBackground);
+    Background   *pstBackground,
+    double        dCameraPosY);
 
 Background *InitBackground(
     SDL_Renderer *pstRenderer,

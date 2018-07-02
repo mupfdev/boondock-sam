@@ -62,10 +62,12 @@ doxygen
 ## Controls
 
 ```
-Q: quit
-0: set default zoom level
-1: zoom out
-2: zoom in
+Q:     quit
+0:     set default zoom level
+1:     zoom out
+2:     zoom in
+LEFT:  walk left
+RIGHT: walk right
 ```
 
 ## License and Credits

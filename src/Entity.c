@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include "AABB.h"
 #include "Entity.h"
+#include "Macros.h"
 
 /**
  * @brief   Draw Entity on screen.
@@ -42,16 +43,16 @@ int8_t DrawEntity(
         return -1;
     }
 
-    dRenderPosX  = pstEntity->dWorldPosX - dCameraPosX;
+    dRenderPosX = pstEntity->dWorldPosX - dCameraPosX;
     dRenderPosY = pstEntity->dWorldPosY - dCameraPosY;
-    stDst.x      = dRenderPosX;
-    stDst.y      = dRenderPosY;
-    stDst.w      = pstEntity->u8Width;
-    stDst.h      = pstEntity->u8Height;
-    stSrc.x      = pstEntity->u8Frame * pstEntity->u8Width;
-    stSrc.y      = 0;
-    stSrc.w      = pstEntity->u8Width;
-    stSrc.h      = pstEntity->u8Width;
+    stDst.x     = dRenderPosX;
+    stDst.y     = dRenderPosY;
+    stDst.w     = pstEntity->u8Width;
+    stDst.h     = pstEntity->u8Height;
+    stSrc.x     = pstEntity->u8Frame        * pstEntity->u8Width;
+    stSrc.y     = pstEntity->u8FrameOffsetY * pstEntity->u8Height;
+    stSrc.w     = pstEntity->u8Width;
+    stSrc.h     = pstEntity->u8Height;
 
     if ((pstEntity->u16Flags >> ENTITY_DIRECTION) & 1)
     {
@@ -80,16 +81,16 @@ int8_t DrawEntity(
 
 /**
  * @brief   Initialise Entity.
- * @param   u8Height height of the Entity in pixel.
  * @param   u8Width  width  of the Entity in pixel.
+ * @param   u8Height height of the Entity in pixel.
  * @param   dPosX    initial world position along the x-axis.
  * @param   dPosY    initial world position along the y-axis.
  * @return  an Entity on success, NULL on failure.
  * @ingroup Entity
  */
 Entity *InitEntity(
-    const uint8_t u8Height,
     const uint8_t u8Width,
+    const uint8_t u8Height,
     const double  dPosX,
     const double  dPosY)
 {
@@ -101,25 +102,33 @@ Entity *InitEntity(
         return NULL;
     }
 
-    pstEntity->dAcceleration     = 400;
-    pstEntity->u16Flags          =   0;
-    pstEntity->u8Height          = u8Height;
-    pstEntity->u8Width           = u8Width;
-    pstEntity->dVelocityMax      = 100;
-    pstEntity->dWorldGravitation =   9.81;
-    pstEntity->dWorldPosX        = dPosX;
-    pstEntity->dWorldPosY        = dPosY;
+    pstEntity->dAcceleration       = 400;
+    pstEntity->dDeceleration       = 200;
+    pstEntity->u16Flags            =   0;
+    pstEntity->u8Height            = u8Height;
+    pstEntity->u8Width             = u8Width;
+    pstEntity->dFrameAnimationFPS  =  20;
+    pstEntity->u8FrameStart        =   0;
+    pstEntity->u8FrameEnd          =  12;
+    pstEntity->u8FrameOffsetY      =   0;
+    pstEntity->dMaxVelocityX       = 100;
+    pstEntity->dWorldMeterInPixel  =  48;
+    pstEntity->dWorldGravitation   =   9.81;
+    pstEntity->dWorldPosX          = dPosX;
+    pstEntity->dWorldPosY          = dPosY;
 
-    pstEntity->u8Frame           =   0;
-    pstEntity->stBB.dBottom      =   0;
-    pstEntity->stBB.dLeft        = u8Height;
-    pstEntity->stBB.dRight       = u8Width;
-    pstEntity->stBB.dTop         =   0;
-    pstEntity->dInitialWorldPosX = dPosX;
-    pstEntity->dInitialWorldPosY = dPosY;
-    pstEntity->pstSprite         = NULL;
-    pstEntity->dVelocityX        =   0;
-    pstEntity->dVelocityY        =   0;
+    pstEntity->pstSprite           = NULL;
+    pstEntity->u8Frame             =   0;
+    pstEntity->dFrameDuration      =   0;
+    pstEntity->stBB.dBottom        =   0;
+    pstEntity->stBB.dLeft          = u8Height;
+    pstEntity->stBB.dRight         = u8Width;
+    pstEntity->stBB.dTop           =   0;
+    pstEntity->dInitialWorldPosX   = dPosX;
+    pstEntity->dInitialWorldPosY   = dPosY;
+    pstEntity->dDistanceY          =   0;
+    pstEntity->dVelocityX          =   0;
+    pstEntity->dVelocityY          =   0;
 
     return pstEntity;
 }
@@ -160,20 +169,117 @@ int8_t LoadEntitySprite(
 void ResurrectEntity(Entity *pstEntity)
 {
     pstEntity->u16Flags   &= ~(1 << ENTITY_IS_DEAD);
-    pstEntity->u16Flags   &= ~(1 << ENTITY_IS_IN_MOTION);
+    pstEntity->u16Flags   &= ~(1 << ENTITY_IS_MOVING);
     pstEntity->dWorldPosX  = pstEntity->dInitialWorldPosX;
     pstEntity->dWorldPosY  = pstEntity->dInitialWorldPosY;
 }
 
-/*
- * @brief   
- * @param   pstEentity 
- * @param   dDeltaTime 
+/**
+ * @brief   Set the sprite animation of an Entity.
+ * @param   pstEntity          an Entity.  See @ref strucht Entity.
+ * @param   u8FrameStart       the animation's first frame.
+ * @param   u8FrameEnd         the animation's last frame.
+ * @param   u8FrameOffsetY     image offset along the y-axis.
+ * @param   dFrameAnimationFPS animation speed in frames per second.
  * @ingroup Entity
- *
+ */
+void SetEntitySpriteAnimation(
+    Entity  *pstEntity,
+    uint8_t  u8FrameStart,
+    uint8_t  u8FrameEnd,
+    uint8_t  u8FrameOffsetY,
+    double   dFrameAnimationFPS
+)
+{
+    pstEntity->u8FrameStart       = u8FrameStart;
+    pstEntity->u8FrameEnd         = u8FrameEnd;
+    pstEntity->u8FrameOffsetY     = u8FrameOffsetY;
+    pstEntity->dFrameAnimationFPS = dFrameAnimationFPS;
+}
+
+/**
+ * @brief   Update Entity.  This function has to be called every frame.
+ * @param   pstEentity an Entity.  See @ref struct Entity.
+ * @param   dDeltaTime time since last frame in seconds.
+ * @ingroup Entity
+ */
 void UpdateEntity(
     Entity *pstEntity,
     double dDeltaTime)
 {
+    // Update bounding box.
+    pstEntity->stBB.dBottom = pstEntity->dWorldPosY + pstEntity->u8Height;
+    pstEntity->stBB.dLeft   = pstEntity->dWorldPosX;
+    pstEntity->stBB.dRight  = pstEntity->dWorldPosX + pstEntity->u8Width;
+    pstEntity->stBB.dTop    = pstEntity->dWorldPosY;
 
-}*/
+    // Increase/decrease vertical velocity if entity is in motion.
+    if (FLAG_IS_SET(pstEntity->u16Flags, ENTITY_IS_MOVING))
+    {
+        pstEntity->dVelocityX += pstEntity->dAcceleration * dDeltaTime;
+    }
+    else
+    {
+        pstEntity->dVelocityX -= pstEntity->dDeceleration * dDeltaTime;
+    }
+
+    // Set vertical velocity limits.
+    if (pstEntity->dVelocityX >= pstEntity->dMaxVelocityX)
+    {
+        pstEntity->dVelocityX = pstEntity->dMaxVelocityX;
+    }
+    if (pstEntity->dVelocityX < 0) { pstEntity->dVelocityX = 0; }
+
+
+    // Set horizontal entity position.
+    if (pstEntity->dVelocityX > 0)
+    {
+        if (FLAG_IS_SET(pstEntity->u16Flags, ENTITY_DIRECTION))
+        {
+            pstEntity->dWorldPosX -= (pstEntity->dVelocityX * dDeltaTime);
+        }
+        else
+        {
+            pstEntity->dWorldPosX += (pstEntity->dVelocityX * dDeltaTime);
+        }
+    }
+
+    // Apply gravity.
+    if (FLAG_IS_SET(pstEntity->u16Flags, ENTITY_IS_IN_MID_AIR))
+    {
+        double dG = pstEntity->dWorldMeterInPixel * pstEntity->dWorldGravitation;
+
+        pstEntity->dDistanceY  = dG * dDeltaTime * dDeltaTime;
+        pstEntity->dVelocityY += pstEntity->dDistanceY;
+        pstEntity->dWorldPosY += pstEntity->dVelocityY;
+    }
+    else
+    {
+        // This y-coordinate correction needs an overhaul!
+        while (0 != ((int32_t)pstEntity->dWorldPosY % 8))
+        {
+            pstEntity->dWorldPosY = floor(pstEntity->dWorldPosY);
+            pstEntity->dWorldPosY -= 1.0;
+        }
+    }
+
+    // Update frame.
+    pstEntity->dFrameDuration += dDeltaTime;
+
+    if (pstEntity->u8Frame < pstEntity->u8FrameStart)
+    {
+        pstEntity->u8Frame = pstEntity->u8FrameStart;
+    }
+
+    if (pstEntity->dFrameDuration > 1 / pstEntity->dFrameAnimationFPS)
+    {
+        pstEntity->u8Frame++;
+        pstEntity->dFrameDuration = 0;
+    }
+
+    // Loop frame animation.
+    if (pstEntity->u8Frame >= pstEntity->u8FrameEnd)
+    {
+        pstEntity->u8Frame = pstEntity->u8FrameStart;
+    }
+}

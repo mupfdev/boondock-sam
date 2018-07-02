@@ -10,6 +10,8 @@
 #include "AABB.h"
 #include "Background.h"
 #include "Config.h"
+#include "Entity.h"
+#include "Macros.h"
 #include "Map.h"
 #include "Video.h"
 
@@ -17,7 +19,8 @@
 #include <emscripten.h>
 #endif
 
-#define EXIT_UNSET 2
+#define CAMERA_IS_LOCKED 0
+#define EXIT_UNSET       2
 static  int32_t _s32ExecStatus = EXIT_UNSET;
 
 /**
@@ -27,9 +30,10 @@ static  int32_t _s32ExecStatus = EXIT_UNSET;
  */
 typedef struct MainLoopBundle_t
 {
-    Video      *pstVideo;
     Background *pstBG[5];
+    Entity     *pstSam;
     Map        *pstMap;
+    Video      *pstVideo;
     double      dTimeA;
     double      dTimeB;
     double      dDeltaTime;
@@ -41,12 +45,13 @@ typedef struct MainLoopBundle_t
 
 static void _MainLoop(void *pArg)
 {
+    uint16_t        u16Flags  = 0;
     MainLoopBundle *pstBundle = (MainLoopBundle *)pArg;
-    double dZoomLevel         = pstBundle->pstVideo->dZoomLevel;
     pstBundle->dTimeB         = SDL_GetTicks();
     pstBundle->dDeltaTime     = (pstBundle->dTimeB - pstBundle->dTimeA) / 1000;
     pstBundle->dTimeA         = pstBundle->dTimeB;
 
+    // Process keyboard input.
     const uint8_t *u8KeyState;
     SDL_PumpEvents();
     if (SDL_PeepEvents(0, 0, SDL_PEEKEVENT, SDL_QUIT, SDL_QUIT) > 0)
@@ -54,6 +59,9 @@ static void _MainLoop(void *pArg)
         _s32ExecStatus = EXIT_FAILURE;
     }
     u8KeyState = SDL_GetKeyboardState(NULL);
+
+    // Reset ENTITY_IS_MOVING flag (in case no key is pressed).
+    FLAG_CLEAR(pstBundle->pstSam->u16Flags, ENTITY_IS_MOVING);
 
     #ifndef __EMSCRIPTEN__
     if (u8KeyState[SDL_SCANCODE_Q])
@@ -71,35 +79,144 @@ static void _MainLoop(void *pArg)
 
     if (u8KeyState[SDL_SCANCODE_1])
     {
-        dZoomLevel -= pstBundle->dDeltaTime;
-        SetVideoZoomLevel(pstBundle->pstVideo, dZoomLevel);
+        pstBundle->pstVideo->dZoomLevel -= pstBundle->dDeltaTime;
+        SetVideoZoomLevel(pstBundle->pstVideo, pstBundle->pstVideo->dZoomLevel);
     }
 
     if (u8KeyState[SDL_SCANCODE_2])
     {
-        dZoomLevel += pstBundle->dDeltaTime;
-        SetVideoZoomLevel(pstBundle->pstVideo, dZoomLevel);
+        pstBundle->pstVideo->dZoomLevel += pstBundle->dDeltaTime;
+        SetVideoZoomLevel(pstBundle->pstVideo, pstBundle->pstVideo->dZoomLevel);
     }
 
-    pstBundle->pstBG[4]->dVelocity = pstBundle->dDeltaTime * 50;
+    if (u8KeyState[SDL_SCANCODE_LEFT])
+    {
+        FLAG_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_MOVING);
+        FLAG_SET(pstBundle->pstSam->u16Flags, ENTITY_DIRECTION);
+    }
+
+    if (u8KeyState[SDL_SCANCODE_RIGHT])
+    {
+        FLAG_SET(pstBundle->pstSam->u16Flags,   ENTITY_IS_MOVING);
+        FLAG_CLEAR(pstBundle->pstSam->u16Flags, ENTITY_DIRECTION);
+    }
+
+    // Set camera position.
+    pstBundle->dCameraPosX =
+        pstBundle->pstSam->dWorldPosX         -
+        pstBundle->pstVideo->s32WindowWidth   /
+        (pstBundle->pstVideo->dZoomLevel * 2) +
+        (pstBundle->pstSam->u8Width      / 2);
+
+    pstBundle->dCameraPosY =
+        pstBundle->pstSam->dWorldPosY         -
+        pstBundle->pstVideo->s32WindowHeight  /
+        (pstBundle->pstVideo->dZoomLevel * 2) +
+        (pstBundle->pstSam->u8Height     / 2);
+
+    UpdateEntity(pstBundle->pstSam, pstBundle->dDeltaTime);
+
+    if (FLAG_IS_NOT_SET(pstBundle->pstSam->u16Flags, ENTITY_DIRECTION))
+    {
+        for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
+        {
+            FLAG_SET(
+                pstBundle->pstBG[u8Index]->u16Flags,
+                BACKGROUND_SCROLL_DIRECTION);
+        }
+    }
+
+    // Set camera boundaries to map size.
+    pstBundle->dCameraMaxPosX = pstBundle->pstMap->u32Width -
+        (pstBundle->pstVideo->s32WindowWidth  / pstBundle->pstVideo->dZoomLevel);
+    pstBundle->dCameraMaxPosY = pstBundle->pstMap->u32Height -
+        (pstBundle->pstVideo->s32WindowHeight / pstBundle->pstVideo->dZoomLevel);
+
+    if (pstBundle->dCameraPosX < 0)
+    {
+        FLAG_SET(u16Flags, CAMERA_IS_LOCKED);
+        pstBundle->dCameraPosX = 0;
+    }
+    else if (pstBundle->dCameraPosX > pstBundle->dCameraMaxPosX)
+    {
+        FLAG_SET(u16Flags, CAMERA_IS_LOCKED);
+        pstBundle->dCameraPosX = pstBundle->dCameraMaxPosX;
+    }
+    else
+    {
+        FLAG_CLEAR(u16Flags, CAMERA_IS_LOCKED);
+    }
+
+    if (pstBundle->dCameraPosY < 0)
+    {
+        pstBundle->dCameraPosY = 0;
+    }
+    else if (pstBundle->dCameraPosY > pstBundle->dCameraMaxPosY)
+    {
+        pstBundle->dCameraPosY = pstBundle->dCameraMaxPosY;
+    }
+
+    // Scroll background if camera is not locked.
+    if (FLAG_IS_NOT_SET(u16Flags, CAMERA_IS_LOCKED))
+    {
+        pstBundle->pstBG[4]->dVelocity = pstBundle->pstSam->dVelocityX  * pstBundle->dDeltaTime;
+    }
+    else
+    {
+        pstBundle->pstBG[4]->dVelocity = 0;
+    }
+
     pstBundle->pstBG[3]->dVelocity = pstBundle->pstBG[4]->dVelocity / 2;
     pstBundle->pstBG[2]->dVelocity = pstBundle->pstBG[4]->dVelocity / 3;
     pstBundle->pstBG[1]->dVelocity = pstBundle->pstBG[4]->dVelocity / 4;
     pstBundle->pstBG[0]->dVelocity = pstBundle->pstBG[4]->dVelocity / 5;
 
-    // Set camera boundaries to map size.
-    if (pstBundle->dCameraPosX < 0) { pstBundle->dCameraPosX = 0; }
-    if (pstBundle->dCameraPosY < 0) { pstBundle->dCameraPosY = 0; }
-    if (pstBundle->dCameraPosX > pstBundle->dCameraMaxPosX)
+    // Set sprite animation.
+    if (FLAG_IS_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_IDLING))
     {
-        pstBundle->dCameraPosX = pstBundle->dCameraMaxPosX;
+        SetEntitySpriteAnimation(pstBundle->pstSam, 0, 11, 0, 10);
     }
-    if (pstBundle->dCameraPosY > pstBundle->dCameraMaxPosY)
+    if (FLAG_IS_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_IN_MID_AIR))
     {
-        pstBundle->dCameraPosY = pstBundle->dCameraMaxPosY;
+        if (FLAG_IS_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_JUMPING))
+        {
+            SetEntitySpriteAnimation(pstBundle->pstSam, 14, 14, 0, 20);
+        }
+        else // Falling.
+        {
+            SetEntitySpriteAnimation(pstBundle->pstSam, 14, 14, 1, 20);
+        }
+    }
+    if (FLAG_IS_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_MOVING))
+    {
+        SetEntitySpriteAnimation(pstBundle->pstSam, 0, 7, 1, 20);
+    }
+    FLAG_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_IDLING);
+
+    // Set up rudimentary collision detection.
+    if (IsMapCoordOfType(
+            pstBundle->pstMap,
+            "Floor",
+            pstBundle->pstSam->dWorldPosX,
+            pstBundle->pstSam->dWorldPosY + pstBundle->pstSam->u8Height))
+    {
+        FLAG_CLEAR(pstBundle->pstSam->u16Flags, ENTITY_IS_IN_MID_AIR);
+    }
+    else
+    {
+        FLAG_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_IN_MID_AIR);
+    }
+    // Temporary fix to prevent the player entity from falling off the map:
+    if (8 >= pstBundle->pstSam->dWorldPosX)
+    {
+        pstBundle->pstSam->dWorldPosX = 8;
     }
 
-    // Fix map background rendering when using Emscripten.
+    if (1580 <= pstBundle->pstSam->dWorldPosX)
+    {
+        pstBundle->pstSam->dWorldPosX = 1580;
+    }
+
     #ifdef __EMSCRIPTEN__
     SDL_RenderClear(pstBundle->pstVideo->pstRenderer);
     #endif
@@ -107,14 +224,14 @@ static void _MainLoop(void *pArg)
     // Render scene.
     for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
     {
-        pstBundle->pstBG[u8Index]->dWorldPosY =
-            pstBundle->pstVideo->s32WindowHeight -
-            pstBundle->pstBG[u8Index]->s32Height /
-            pstBundle->pstVideo->dZoomLevel;
-
         DrawBackground(
             pstBundle->pstVideo->pstRenderer,
-            pstBundle->pstBG[u8Index]);
+            pstBundle->pstBG[u8Index],
+            pstBundle->dCameraPosY);
+
+            FLAG_CLEAR(
+                pstBundle->pstBG[u8Index]->u16Flags,
+                BACKGROUND_SCROLL_DIRECTION);
     }
 
     DrawMap(
@@ -126,12 +243,27 @@ static void _MainLoop(void *pArg)
         pstBundle->dCameraPosX,
         pstBundle->dCameraPosY);
 
+    DrawEntity(
+        pstBundle->pstVideo->pstRenderer,
+        pstBundle->pstSam,
+        pstBundle->dCameraPosX,
+        pstBundle->dCameraPosY);
+
     DrawMap(
         pstBundle->pstVideo->pstRenderer,
         pstBundle->pstMap,
         "World",
         0,
         1,
+        pstBundle->dCameraPosX,
+        pstBundle->dCameraPosY);
+
+    DrawMap(
+        pstBundle->pstVideo->pstRenderer,
+        pstBundle->pstMap,
+        "Foreground",
+        0,
+        2,
         pstBundle->dCameraPosX,
         pstBundle->dCameraPosY);
 
@@ -147,37 +279,32 @@ static void _MainLoop(void *pArg)
 
 int32_t main(int32_t s32ArgC, char *pacArgV[])
 {
-    const char *pacConfigFilename;
+    Background     *pstBG[5]  = { NULL };
+    MainLoopBundle *pstBundle = NULL;
+    Config          stConfig;
+    Entity         *pstSam    = NULL;
+    Map            *pstMap    = NULL;
+    Video          *pstVideo  = NULL;
+
     if (s32ArgC > 1)
     {
-        pacConfigFilename = pacArgV[1];
+        stConfig = InitConfig(pacArgV[1]);
     }
     else
     {
         #ifndef __EMSCRIPTEN__
-        pacConfigFilename = "default.ini";
+        stConfig = InitConfig("default.ini");
         #else
-        pacConfigFilename = "windowed.ini";
+        stConfig = InitConfig("windowed.ini");
         #endif
     }
-
-    Background *pstBG[5];
-    for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
-    {
-        pstBG[u8Index] = NULL;
-    }
-
-    Config          stConfig  = InitConfig(pacConfigFilename);
-    MainLoopBundle *pstBundle = NULL;
-    Map            *pstMap    = NULL;
-    Video          *pstVideo  = NULL;
 
     pstVideo = InitVideo(
         "Boondock Sam",
         stConfig.stVideo.s32Width,
         stConfig.stVideo.s32Height,
         stConfig.stVideo.s8Fullscreen,
-        1);
+        1 + stConfig.stVideo.s32Height / 216); // 216 = Background height.
     if (NULL == pstVideo)
     {
         _s32ExecStatus = EXIT_FAILURE;
@@ -185,19 +312,9 @@ int32_t main(int32_t s32ArgC, char *pacArgV[])
     }
     atexit(SDL_Quit);
 
-    pstMap = InitMap(
-        "res/maps/demo.tmx",
-        "res/tilesets/jungle.png");
+    pstMap = InitMap("res/maps/demo.tmx", "res/tilesets/jungle.png");
     if (NULL == pstMap)
     {
-        _s32ExecStatus = EXIT_FAILURE;
-        goto quit;
-    }
-
-    pstBundle = malloc(sizeof(struct MainLoopBundle_t));
-    if (NULL == pstBundle)
-    {
-        fprintf(stderr, "stBundle: error allocating memory.\n");
         _s32ExecStatus = EXIT_FAILURE;
         goto quit;
     }
@@ -222,15 +339,38 @@ int32_t main(int32_t s32ArgC, char *pacArgV[])
             _s32ExecStatus = EXIT_FAILURE;
             goto quit;
         }
+
+        pstBG[u8Index]->dWorldPosY = pstMap->u32Height - pstBG[u8Index]->s32Height;
+    }
+
+    pstSam = InitEntity(24, 40, 64, 200);
+    if (NULL == pstSam)
+    {
+        _s32ExecStatus = EXIT_FAILURE;
+        goto quit;
+    }
+    if (-1 == LoadEntitySprite(pstSam, pstVideo->pstRenderer, "res/sprites/sam.png"))
+    {
+        _s32ExecStatus = EXIT_FAILURE;
+        goto quit;
+    }
+
+    pstBundle = malloc(sizeof(struct MainLoopBundle_t));
+    if (NULL == pstBundle)
+    {
+        fprintf(stderr, "stBundle: error allocating memory.\n");
+        _s32ExecStatus = EXIT_FAILURE;
+        goto quit;
     }
 
     pstBundle->pstVideo       = pstVideo;
     pstBundle->pstMap         = pstMap;
+    pstBundle->pstSam         = pstSam;
     pstBundle->dTimeA         = SDL_GetTicks();
     pstBundle->dCameraPosX    = 0;
-    pstBundle->dCameraPosY    = pstMap->u32Height - pstVideo->s32WindowHeight;
-    pstBundle->dCameraMaxPosX = pstMap->u32Width  - (pstVideo->s32WindowWidth  / pstVideo->dZoomLevel);
-    pstBundle->dCameraMaxPosY = pstMap->u32Height - (pstVideo->s32WindowHeight / pstVideo->dZoomLevel);
+    pstBundle->dCameraPosY    = 0;
+    pstBundle->dCameraMaxPosX = 0;
+    pstBundle->dCameraMaxPosY = 0;
 
     for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
     {
@@ -253,12 +393,14 @@ int32_t main(int32_t s32ArgC, char *pacArgV[])
     #endif
 
 quit:
-    free(pstBundle);
     for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
     {
         free(pstBG[u8Index]);
     }
     FreeMap(pstMap);
+    free(pstSam);
+    free(pstBundle);
     TerminateVideo(pstVideo);
+
     return _s32ExecStatus;
 }

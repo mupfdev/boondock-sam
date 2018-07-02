@@ -42,7 +42,7 @@ static SDL_Texture *_RenderLayer(
     u8WidthFactor  = ceil((double)s32WindowWidth / (double)s32ImageWidth);
     s32LayerWidth  = s32ImageWidth * u8WidthFactor;
     s32LayerHeight = s32ImageHeight;
-    pstLayer        = SDL_CreateTexture(
+    pstLayer       = SDL_CreateTexture(
         pstRenderer,
         SDL_PIXELFORMAT_ARGB8888,
         SDL_TEXTUREACCESS_TARGET,
@@ -96,18 +96,22 @@ static SDL_Texture *_RenderLayer(
 
 /**
  * @brief   Draw Background on screen.
- * @param   pstRenderer   a SDL rendering context.  See @ref struct Video.
- * @param   pstBackground the Background to render.  See @ref struct Background.
+ * @param   pstRenderer     a SDL rendering context.  See @ref struct Video.
+ * @param   pstBackground   the Background to render.  See @ref struct Background.
+ * @param   dCameraPosX     camera position along the x-axis.
+ * @param   dCameraPosY     camera position along the y-axis.
  * @return  0 on success, -1 on failure.
  * @ingroup Background
  */
 int8_t DrawBackground(
     SDL_Renderer *pstRenderer,
-    Background   *pstBackground)
+    Background   *pstBackground,
+    double        dCameraPosY)
 {
     int32_t  s32Width = 0;
     double   dPosXa;
     double   dPosXb;
+    SDL_Rect stDst;
 
     if (0 != SDL_QueryTexture(pstBackground->pstLayer, NULL, NULL, &s32Width, NULL))
     {
@@ -139,15 +143,19 @@ int8_t DrawBackground(
     {
         if ((pstBackground->u16Flags >> BACKGROUND_SCROLL_DIRECTION) & 1)
         {
-            pstBackground->dWorldPosX += pstBackground->dVelocity;
+            pstBackground->dWorldPosX -= pstBackground->dVelocity;
         }
         else
         {
-            pstBackground->dWorldPosX -= pstBackground->dVelocity;
+            pstBackground->dWorldPosX += pstBackground->dVelocity;
         }
     }
 
-    SDL_Rect stDst = { dPosXa, pstBackground->dWorldPosY, s32Width, 192 };
+    stDst.x = dPosXa;
+    stDst.y = pstBackground->dWorldPosY - dCameraPosY;
+    stDst.w = s32Width;
+    stDst.h = pstBackground->s32Height;
+
     if (-1 == SDL_RenderCopyEx(pstRenderer, pstBackground->pstLayer, NULL, &stDst, 0, NULL, SDL_FLIP_NONE))
     {
         fprintf(stderr, "%s\n", SDL_GetError());
