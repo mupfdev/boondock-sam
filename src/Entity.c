@@ -81,18 +81,20 @@ int8_t DrawEntity(
 
 /**
  * @brief   Initialise Entity.
- * @param   u8Width  width  of the Entity in pixel.
- * @param   u8Height height of the Entity in pixel.
- * @param   dPosX    initial world position along the x-axis.
- * @param   dPosY    initial world position along the y-axis.
+ * @param   u8Width     width  of the Entity in pixel.
+ * @param   u8Height    height of the Entity in pixel.
+ * @param   dPosX       initial world position along the x-axis.
+ * @param   dPosY       initial world position along the y-axis.
+ * @param   u32MapWidth width of the map.  See @ref struct Map.
  * @return  an Entity on success, NULL on failure.
  * @ingroup Entity
  */
 Entity *InitEntity(
-    const uint8_t u8Width,
-    const uint8_t u8Height,
-    const double  dPosX,
-    const double  dPosY)
+    const uint8_t  u8Width,
+    const uint8_t  u8Height,
+    const double   dPosX,
+    const double   dPosY,
+    const uint32_t u32MapWidth)
 {
     static Entity *pstEntity;
     pstEntity = malloc(sizeof(struct Entity_t));
@@ -107,6 +109,7 @@ Entity *InitEntity(
     pstEntity->u16Flags            =   0;
     pstEntity->u8Height            = u8Height;
     pstEntity->u8Width             = u8Width;
+    pstEntity->u32MapWidth         = u32MapWidth;
     pstEntity->dFrameAnimationFPS  =  20;
     pstEntity->u8FrameStart        =   0;
     pstEntity->u8FrameEnd          =  12;
@@ -255,12 +258,23 @@ void UpdateEntity(
     }
     else
     {
-        // This y-coordinate correction needs an overhaul!
+        // Experimental y-coordinate correction.
         while (0 != ((int32_t)pstEntity->dWorldPosY % 8))
         {
             pstEntity->dWorldPosY = floor(pstEntity->dWorldPosY);
             pstEntity->dWorldPosY -= 1.0;
         }
+    }
+
+    // Connect left and right map border and vice versa.
+    if (pstEntity->dWorldPosX < 0 - (pstEntity->u8Width))
+    {
+        pstEntity->dWorldPosX = pstEntity->u32MapWidth - (pstEntity->u8Width);
+    }
+
+    if (pstEntity->dWorldPosX > pstEntity->u32MapWidth - (pstEntity->u8Width))
+    {
+        pstEntity->dWorldPosX = 0 - (pstEntity->u8Width);
     }
 
     // Update frame.

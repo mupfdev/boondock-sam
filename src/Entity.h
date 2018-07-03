@@ -32,6 +32,7 @@ typedef struct Entity_t
     uint16_t     u16Flags;
     uint8_t      u8Height;
     uint8_t      u8Width;
+    uint32_t     u32MapWidth;
     double       dFrameAnimationFPS;
     uint8_t      u8FrameStart;
     uint8_t      u8FrameEnd;
@@ -62,10 +63,11 @@ int8_t DrawEntity(
     double        dCameraPosY);
 
 Entity *InitEntity(
-    const uint8_t u8Width,
-    const uint8_t u8Height,
-    const double  dPosX,
-    const double  dPosY);
+    const uint8_t  u8Width,
+    const uint8_t  u8Height,
+    const double   dPosX,
+    const double   dPosY,
+    const uint32_t u32MapWidth);
 
 int8_t LoadEntitySprite(
     Entity       *pstEntity,

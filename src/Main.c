@@ -182,8 +182,10 @@ static void _MainLoop(void *pArg)
         {
             SetEntitySpriteAnimation(pstBundle->pstSam, 14, 14, 0, 20);
         }
-        else // Falling.
+        else
         {
+            /* If the entity is in mid air but isn't jumping, it is
+             * falling downwards. */
             SetEntitySpriteAnimation(pstBundle->pstSam, 14, 14, 1, 20);
         }
     }
@@ -193,11 +195,11 @@ static void _MainLoop(void *pArg)
     }
     FLAG_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_IDLING);
 
-    // Set up rudimentary collision detection.
+    // Set up collision detection.
     if (IsMapCoordOfType(
             pstBundle->pstMap,
             "Floor",
-            pstBundle->pstSam->dWorldPosX,
+            pstBundle->pstSam->dWorldPosX + pstBundle->pstSam->u8Width,
             pstBundle->pstSam->dWorldPosY + pstBundle->pstSam->u8Height))
     {
         FLAG_CLEAR(pstBundle->pstSam->u16Flags, ENTITY_IS_IN_MID_AIR);
@@ -205,16 +207,6 @@ static void _MainLoop(void *pArg)
     else
     {
         FLAG_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_IN_MID_AIR);
-    }
-    // Temporary fix to prevent the player entity from falling off the map:
-    if (8 >= pstBundle->pstSam->dWorldPosX)
-    {
-        pstBundle->pstSam->dWorldPosX = 8;
-    }
-
-    if (1580 <= pstBundle->pstSam->dWorldPosX)
-    {
-        pstBundle->pstSam->dWorldPosX = 1580;
     }
 
     #ifdef __EMSCRIPTEN__
@@ -295,7 +287,7 @@ int32_t main(int32_t s32ArgC, char *pacArgV[])
         #ifndef __EMSCRIPTEN__
         stConfig = InitConfig("default.ini");
         #else
-        stConfig = InitConfig("windowed.ini");
+        stConfig = InitConfig("emscripten.ini");
         #endif
     }
 
@@ -343,7 +335,7 @@ int32_t main(int32_t s32ArgC, char *pacArgV[])
         pstBG[u8Index]->dWorldPosY = pstMap->u32Height - pstBG[u8Index]->s32Height;
     }
 
-    pstSam = InitEntity(24, 40, 64, 200);
+    pstSam = InitEntity(24, 40, 264, 200, pstMap->u32Width);
     if (NULL == pstSam)
     {
         _s32ExecStatus = EXIT_FAILURE;
