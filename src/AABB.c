@@ -1,4 +1,5 @@
-/** @file AABB.c
+/**
+ * @file      AABB.c
  * @ingroup   AABB
  * @defgroup  AABB
  * @brief     Axis-aligned bounding boxes manager.
@@ -10,7 +11,7 @@
 #include "AABB.h"
 
 /**
- * @brief   Checks if two bounding boxes are intersecting.
+ * @brief   Check if two bounding boxes intersect.
  * @param   stBoxA bounding box A.
  * @param   stBoxB bounding box B.
  * @return  1 if boxes are intersecting, 0 if not.

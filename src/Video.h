@@ -1,4 +1,5 @@
-/** @file Video.h
+/**
+ * @file    Video.h
  * @ingroup Video
  */
 
@@ -7,6 +8,15 @@
 
 #include <SDL2/SDL.h>
 #include <stdint.h>
+
+/**
+ * @ingroup Video
+ */
+enum VideoLimits
+{
+    VIDEO_MIN_ZOOMLEVEL = 1,
+    VIDEO_MAX_ZOOMLEVEL = 4
+};
 
 /**
  * @ingroup Video

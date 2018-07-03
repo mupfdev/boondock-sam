@@ -1,4 +1,5 @@
-/** @file Video.c
+/**
+ * @file      Video.c
  * @ingroup   Video
  * @defgroup  Video
  * @brief     Video subsystem.
@@ -13,14 +14,13 @@
 #include "Video.h"
 
 /**
- * @brief   Initialise video subsystem.
- * @param   pacTitle     the title of the window, in UTF-8 encoding.
- * @param   s32Width     the width of the window, in screen coordinates.
- * @param   s32Height    the height of the window, in screen coordinates.
- * @param   u8Fullscreen the window's fullscreen state.
- * @param   dZoomLevel   the zoom level used by the renderer.
- * @return  A pointer to the Video structure or NULL on failure.
- *          See @ref struct Video.
+ * @brief   Initialise Video subsystem.
+ * @param   pacTitle     the name of the window.
+ * @param   s32Width     window width.
+ * @param   s32Height    window height.
+ * @param   u8Fullscreen boolean value to set fullscreen state.
+ * @param   dZoomLevel   the initial zoom level.
+ * @return  Video on success, NULL on failure.  See @ref struct Video.
  * @ingroup Video
  */
 Video *InitVideo(
@@ -118,15 +118,16 @@ Video *InitVideo(
 }
 
 /**
- * @brief   Set the renderer's zoom level.
- * @param   pstVideo   A Video structure.  See @ref struct Video.
- * @param   dZoomLevel the zoom level
+ * @brief   Set Video zoom level.
+ * @param   pstVideo   Video.  See @ref struct Video.
+ * @param   dZoomLevel the zoom level.
  * @ingroup Video
- * @return  0 on success, -1 on failure.
+ * @return
  */
 int8_t SetVideoZoomLevel(Video *pstVideo, double dZoomLevel)
 {
-    if (dZoomLevel < 1) dZoomLevel = 1;
+    if (dZoomLevel <= VIDEO_MIN_ZOOMLEVEL) dZoomLevel = VIDEO_MIN_ZOOMLEVEL;
+    if (dZoomLevel >= VIDEO_MAX_ZOOMLEVEL) dZoomLevel = VIDEO_MAX_ZOOMLEVEL;
 
     if (0 != SDL_RenderSetLogicalSize(
             pstVideo->pstRenderer,
@@ -143,9 +144,8 @@ int8_t SetVideoZoomLevel(Video *pstVideo, double dZoomLevel)
 }
 
 /**
- * @brief   Terminate video subsystem.
- * @param   pstVideo pointer to Video structure.
- *          See @ref struct Video.
+ * @brief   Terminate Video subsystem.
+ * @param   pstVideo Video.  See @ref struct Video.
  * @ingroup Video
  */
 void TerminateVideo(Video *pstVideo)

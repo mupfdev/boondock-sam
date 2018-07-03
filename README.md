@@ -58,6 +58,13 @@ If you're on NixOS enter:
 nix-shell --command make
 ```
 
+Due libxml2 isn't available via
+[emscripten-ports](https://github.com/emscripten-ports), the Emscripten
+support is in an experimental stage:
+```
+make emscripten
+```
+
 To generate the documentation using doxygen enter:
 ```
 doxygen
@@ -66,10 +73,12 @@ doxygen
 ## Controls
 
 ```
-Q: quit
-0: set default zoom level
-1: zoom out
-2: zoom in
+Q:     quit
+0:     set default zoom level
+1:     zoom out
+2:     zoom in
+LEFT:  walk left
+RIGHT: walk right
 ```
 
 ## License and Credits

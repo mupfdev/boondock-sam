@@ -1,4 +1,5 @@
-/** @file Config.h
+/**
+ * @file    Config.h
  * @ingroup Config
  */
 

@@ -1,4 +1,5 @@
-/** @file AABB.h
+/**
+ * @file    AABB.h
  * @ingroup AABB
  */
 

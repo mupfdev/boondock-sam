@@ -15,29 +15,25 @@
 #include "Map.h"
 
 /**
- * @brief   Draw map on screen.
- * @param   pstRenderer        SDL's rendering context.
- *                             See @ref struct Video.
- * @param   pstMap             the map that should be rendered.
- * @param   pacLayerName       substring of the layer name(s) that
- *                             should be rendered.
- * @param   u8RenderBackground boolean value to determine if the map's
- *                             background colour should be rendered or
- *                             not.  If set to 0, the background stays
- *                             transparent.
- * @param   u8Index            determine the texture index.  The total
- *                             amount of textures per map is defined by
- *                             the constant MAP_MAX_LAYERS.
- * @param   dCameraPosX        camera position along the x-axis.
- * @param   dCameraPosY        camera position along the y-axis.
- * @return  0 on success, -1 on error.
+ * @brief   Draw Map.
+ * @param   pstRenderer      a SDL rendering context.  See @ref struct Video.
+ * @param   pstMap           the Map.  See @ref struct Map.
+ * @param   pacLayerName     substring of the layer(s) to render.
+ * @param   u8RenderBgColour a boolean value to set whether the background
+ *                           colour should be rendered or not.
+ * @param   u8Index          the layer index.  The total amount of layers per map
+ *                           is defined by MAP_MAX_LAYERS.  Not to confused with
+                             the layers used by Tiled which can be grouped by name.
+ * @param   dCameraPosX      camera position along the x-axis.
+ * @param   dCameraPosY      camera position along the y-axis.
+ * @return  0 on success, -1 on failure.
  * @ingroup Map
  */
 int8_t DrawMap(
     SDL_Renderer  *pstRenderer,
     Map           *pstMap,
     const char    *pacLayerName,
-    const uint8_t  u8RenderBackground,
+    const uint8_t  u8RenderBgColour,
     const uint8_t  u8Index,
     const double   dCameraPosX,
     const double   dCameraPosY)
@@ -101,7 +97,7 @@ int8_t DrawMap(
         return -1;
     }
 
-    if (u8RenderBackground)
+    if (u8RenderBgColour)
     {
         SDL_SetRenderDrawColor(
             pstRenderer,
@@ -161,8 +157,8 @@ int8_t DrawMap(
 }
 
 /**
- * @brief   Free map.
- * @param   pstMap the Map that should be freed.  See @ref struct Map.
+ * @brief   Free Map from memory.
+ * @param   pstMap a Map.  See @ref struct Map.
  * @ingroup Map
  */
 void FreeMap(Map *pstMap)
@@ -173,14 +169,13 @@ void FreeMap(Map *pstMap)
 }
 
 /**
- * @brief   Initialise map.
- * @param   pacFilename             the TMX map file to load.
- * @param   pacTilesetImageFilename the image used as tileset.
- * @return  A pointer to the Map structure on success, NULL on error.
- *          See @ref struct Map.
+ * @brief   Initialise Map.
+ * @param   pacFilename             the filename of the TMX map.
+ * @param   pacTilesetImageFilename the filename of the tileset image.
+ * @return  a Map on success, NULL on failure.
  * @ingroup Map
  */
-Map  *InitMap(
+Map *InitMap(
     const char *pacFilename,
     const char *pacTilesetImageFilename)
 {
@@ -226,13 +221,13 @@ Map  *InitMap(
     return pstMap;
 }
 
-/*
- * @brief   Check whether a map tile is from a specific type or not.
- * @param   pstMap  the map.
- * @param   pacType name of the tile type to look for.
- * @param   dPosX   coordinate along the x-axis.
- * @param   dPosY   coordinate along the y-axis.
- * @return  1 if the tile is of the specific type, 0 if not.
+/**
+ * @brief   Check whether a map tile is of a specific type.
+ * @param   pstMap  a Map.  See @ref struct Map.
+ * @param   pacType the name of the type.
+ * @param   dPosX   position along the x-axis.
+ * @param   dPosY   position along the y-axis.
+ * @return  1 if tile is of specific type, 0 if not.
  * @ingroup Map
  */
 uint8_t IsMapCoordOfType(

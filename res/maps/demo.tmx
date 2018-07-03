@@ -1,14 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" tiledversion="1.1.2" orientation="orthogonal" renderorder="right-down" width="100" height="50" tilewidth="16" tileheight="16" infinite="0" backgroundcolor="#2b5754" nextobjectid="1">
+<map version="1.0" tiledversion="1.1.2" orientation="orthogonal" renderorder="right-down" width="100" height="30" tilewidth="16" tileheight="16" infinite="0" backgroundcolor="#2b5754" nextobjectid="1">
  <tileset firstgid="1" source="../tilesets/jungle.tsx"/>
- <layer name="Background" width="100" height="50">
+ <layer name="Background" width="100" height="30">
   <data encoding="base64" compression="zlib">
-   eJztwTEBAAAAwqD1T20ND6AAAAAAAAAAAAAAAAAAAAAAAAAAeDBOIAAB
+   eJztzskNwlAUBEGHYzC5sDgXtlzYcrENYTE5cHhIv0rqe3cdAAAAAAAAAAAA/6BPq7ROQ9rU7jRvm3Zpnw5prN1p3jGd0jld0rV2p3m3dE+P9Eyv0humNKclvdOndgd+8gWBTwu5
   </data>
  </layer>
- <layer name="Level" width="100" height="50">
+ <layer name="World" width="100" height="30">
   <data encoding="base64" compression="zlib">
-   eJzt0bcNgEAABMGnEEwxmGIwxWD65XogeIIZafOTrhT+pm1K6VKfhqb2GsZ8MKU5Lf6obs0HW9rT4Y/qznxwpTs9/gAAAAAAAAAAAAAAAAAAAAAAgM9e5eQFoQ==
+   eJzt0MsKg1AMRdF4bf//61r79Ev6OtAG5OLBjDraCzYOlCQYAQAAAAAAAAAAAAAAAAAAAOBfDkPEUU3qpM7qoq7qpu5q/r2vtjZnucftdPW3VG92O7fKb/vZ7pk7KzPzNvePHuqpXuqtokUMqqlR7dS+fd9XW5uz3ON2uvpbqje7nVvlt/1s98ydlZl5m/tHH0UOjGw=
+  </data>
+ </layer>
+ <layer name="Foreground" width="100" height="30">
+  <data encoding="base64" compression="zlib">
+   eJztyskNwlAUBEGHYzC5sDgXtlzYcrENYTEpfOkJcaiS+tZdBwAAAAAAAAAAwC/1aZXWaUib4p8227RL+3RIY/FPm2M6pXO6pGvxT5tbuqdHeqZX8U+bKc1pSe/0Kf7hH3wB074XcQ==
   </data>
  </layer>
 </map>

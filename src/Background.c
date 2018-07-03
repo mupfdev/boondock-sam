@@ -1,4 +1,5 @@
-/** @file Background.c
+/**
+ * @file      Background.c
  * @ingroup   Background
  * @defgroup  Background
  * @brief     A handler to manage parallax scrolling backgrounds.
@@ -16,8 +17,8 @@ static SDL_Texture *_RenderLayer(
     const char    *pacFilename,
     const int32_t  s32WindowWidth)
 {
-    SDL_Texture *pstImage        = NULL;
-    SDL_Texture *pstLayer        = NULL;
+    SDL_Texture *pstImage       = NULL;
+    SDL_Texture *pstLayer       = NULL;
     int32_t      s32ImageWidth  = 0;
     int32_t      s32ImageHeight = 0;
     int32_t      s32LayerHeight = 0;
@@ -41,7 +42,7 @@ static SDL_Texture *_RenderLayer(
     u8WidthFactor  = ceil((double)s32WindowWidth / (double)s32ImageWidth);
     s32LayerWidth  = s32ImageWidth * u8WidthFactor;
     s32LayerHeight = s32ImageHeight;
-    pstLayer        = SDL_CreateTexture(
+    pstLayer       = SDL_CreateTexture(
         pstRenderer,
         SDL_PIXELFORMAT_ARGB8888,
         SDL_TEXTUREACCESS_TARGET,
@@ -93,13 +94,24 @@ static SDL_Texture *_RenderLayer(
     return pstLayer;
 }
 
+/**
+ * @brief   Draw Background on screen.
+ * @param   pstRenderer     a SDL rendering context.  See @ref struct Video.
+ * @param   pstBackground   the Background to render.  See @ref struct Background.
+ * @param   dCameraPosX     camera position along the x-axis.
+ * @param   dCameraPosY     camera position along the y-axis.
+ * @return  0 on success, -1 on failure.
+ * @ingroup Background
+ */
 int8_t DrawBackground(
     SDL_Renderer *pstRenderer,
-    Background   *pstBackground)
+    Background   *pstBackground,
+    double        dCameraPosY)
 {
     int32_t  s32Width = 0;
     double   dPosXa;
     double   dPosXb;
+    SDL_Rect stDst;
 
     if (0 != SDL_QueryTexture(pstBackground->pstLayer, NULL, NULL, &s32Width, NULL))
     {
@@ -107,17 +119,17 @@ int8_t DrawBackground(
         return -1;
     }
 
-    if (pstBackground->dPosX < -s32Width)
+    if (pstBackground->dWorldPosX < -s32Width)
     {
-        pstBackground->dPosX = +s32Width;
+        pstBackground->dWorldPosX = +s32Width;
     }
 
-    if (pstBackground->dPosX > +s32Width)
+    if (pstBackground->dWorldPosX > +s32Width)
     {
-        pstBackground->dPosX = -s32Width;
+        pstBackground->dWorldPosX = -s32Width;
     }
 
-    dPosXa = pstBackground->dPosX;
+    dPosXa = pstBackground->dWorldPosX;
     if (dPosXa > 0)
     {
         dPosXb = dPosXa - s32Width;
@@ -131,15 +143,19 @@ int8_t DrawBackground(
     {
         if ((pstBackground->u16Flags >> BACKGROUND_SCROLL_DIRECTION) & 1)
         {
-            pstBackground->dPosX += pstBackground->dVelocity;
+            pstBackground->dWorldPosX -= pstBackground->dVelocity;
         }
         else
         {
-            pstBackground->dPosX -= pstBackground->dVelocity;
+            pstBackground->dWorldPosX += pstBackground->dVelocity;
         }
     }
 
-    SDL_Rect stDst = { dPosXa, pstBackground->dPosY, s32Width, 192 };
+    stDst.x = dPosXa;
+    stDst.y = pstBackground->dWorldPosY - dCameraPosY;
+    stDst.w = s32Width;
+    stDst.h = pstBackground->s32Height;
+
     if (-1 == SDL_RenderCopyEx(pstRenderer, pstBackground->pstLayer, NULL, &stDst, 0, NULL, SDL_FLIP_NONE))
     {
         fprintf(stderr, "%s\n", SDL_GetError());
@@ -156,6 +172,14 @@ int8_t DrawBackground(
     return 0;
 }
 
+/**
+ * @brief   Initialise Background.
+ * @param   pstRenderer    a SDL rendering context.  See @ref struct Video.
+ * @param   pacFilename    the filename of the image.
+ * @param   s32WindowWidth the width of the window.  See @ref struct Video.
+ * @return  a Background on success, NULL on failure.
+ * @ingroup Background
+ */
 Background *InitBackground(
     SDL_Renderer *pstRenderer,
     const char   *pacFilename,
@@ -171,7 +195,10 @@ Background *InitBackground(
     }
 
     pstBackground->u16Flags = 0;
-    pstBackground->pstLayer  = _RenderLayer(pstRenderer, pacFilename, s32WindowWidth);
+    pstBackground->pstLayer = _RenderLayer(
+        pstRenderer,
+        pacFilename,
+        s32WindowWidth);
 
     if (NULL == pstBackground->pstLayer)
     {
@@ -179,9 +206,21 @@ Background *InitBackground(
         return NULL;
     }
 
-    pstBackground->dPosX     = 0;
-    pstBackground->dPosY     = 0;
-    pstBackground->dVelocity = 0;
+    if (0 != SDL_QueryTexture(
+            pstBackground->pstLayer,
+            NULL,
+            NULL,
+            &pstBackground->s32Width,
+            &pstBackground->s32Height))
+    {
+        fprintf(stderr, "InitBackground(): Couldn't query SDL_Texture.\n");
+        free(pstBackground);
+        return NULL;
+    }
+
+    pstBackground->dWorldPosX = 0;
+    pstBackground->dWorldPosY = 0;
+    pstBackground->dVelocity  = 0;
 
     return pstBackground;
 }

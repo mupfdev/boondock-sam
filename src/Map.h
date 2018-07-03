@@ -35,7 +35,7 @@ int8_t DrawMap(
     SDL_Renderer  *pstRenderer,
     Map           *pstMap,
     const char    *pacLayerName,
-    const uint8_t  u8RenderBackground,
+    const uint8_t  u8RenderBgColour,
     const uint8_t  u8Index,
     const double   dCameraPosX,
     const double   dCameraPosY);
