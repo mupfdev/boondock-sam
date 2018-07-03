@@ -26,7 +26,7 @@ Anyway: I hope you find the code of this project useful.  If so, feel
 free to use it in any way you want. Just consider buying me a beer in
 case we meet someday.
 
-## Dependencies and how to compile
+## Dependencies
 
 The program has been successfully compiled with the following libraries:
 ```
@@ -36,6 +36,17 @@ sdl2_image 2.0.3
 sdl2_mixer 2.0.2
 zlib       1.2.11
 ```
+
+#### MacOS
+
+All libraries can be installed normally via `brew` given the above formula names.
+
+Additionally, MacOS builds require `icu4c` (installed with `brew install icu4c`).
+
+Further, `icu4c` and `libxml2` will need to be force-linked using
+`brew link --force icu4c libxml2`.
+
+## Compiling
 
 To compile _Boondock Sam_ under Linux simply enter:
 ```

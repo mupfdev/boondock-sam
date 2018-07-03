@@ -13,5 +13,5 @@ emscripten:
 	$(EMSCRIPTEN)
 
 clean:
-	rm $(OBJS)
-	rm $(OUT)
+	rm -f $(OBJS)
+	rm -f $(OUT)
