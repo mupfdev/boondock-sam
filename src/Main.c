@@ -45,11 +45,11 @@ typedef struct MainLoopBundle_t
 
 static void _MainLoop(void *pArg)
 {
-    uint16_t        u16Flags  = 0;
-    MainLoopBundle *pstBundle = (MainLoopBundle *)pArg;
-    pstBundle->dTimeB         = SDL_GetTicks();
-    pstBundle->dDeltaTime     = (pstBundle->dTimeB - pstBundle->dTimeA) / 1000;
-    pstBundle->dTimeA         = pstBundle->dTimeB;
+    uint16_t        u16Flags        = 0;
+    MainLoopBundle *pstBundle       = (MainLoopBundle *)pArg;
+    pstBundle->dTimeB               = SDL_GetTicks();
+    pstBundle->dDeltaTime           = (pstBundle->dTimeB - pstBundle->dTimeA) / 1000;
+    pstBundle->dTimeA               = pstBundle->dTimeB;
 
     // Process keyboard input.
     const uint8_t *u8KeyState;
@@ -114,18 +114,6 @@ static void _MainLoop(void *pArg)
         (pstBundle->pstVideo->dZoomLevel * 2) +
         (pstBundle->pstSam->u8Height     / 2);
 
-    UpdateEntity(pstBundle->pstSam, pstBundle->dDeltaTime);
-
-    if (FLAG_IS_NOT_SET(pstBundle->pstSam->u16Flags, ENTITY_DIRECTION))
-    {
-        for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
-        {
-            FLAG_SET(
-                pstBundle->pstBG[u8Index]->u16Flags,
-                BACKGROUND_SCROLL_DIRECTION);
-        }
-    }
-
     // Set camera boundaries to map size.
     pstBundle->dCameraMaxPosX = pstBundle->pstMap->u32Width -
         (pstBundle->pstVideo->s32WindowWidth  / pstBundle->pstVideo->dZoomLevel);
@@ -154,6 +142,26 @@ static void _MainLoop(void *pArg)
     else if (pstBundle->dCameraPosY > pstBundle->dCameraMaxPosY)
     {
         pstBundle->dCameraPosY = pstBundle->dCameraMaxPosY;
+    }
+
+    // Set background scroll direction.
+    if (FLAG_IS_NOT_SET(pstBundle->pstSam->u16Flags, ENTITY_DIRECTION))
+    {
+        for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
+        {
+            FLAG_SET(
+                pstBundle->pstBG[u8Index]->u16Flags,
+                BACKGROUND_SCROLL_DIRECTION);
+        }
+    }
+    else
+    {
+        for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
+        {
+            FLAG_CLEAR(
+                pstBundle->pstBG[u8Index]->u16Flags,
+                BACKGROUND_SCROLL_DIRECTION);
+        }
     }
 
     // Scroll background if camera is not locked.
@@ -199,7 +207,7 @@ static void _MainLoop(void *pArg)
     if (IsMapCoordOfType(
             pstBundle->pstMap,
             "Floor",
-            pstBundle->pstSam->dWorldPosX + pstBundle->pstSam->u8Width,
+            pstBundle->pstSam->dWorldPosX + (pstBundle->pstSam->u8Width / 1.5),
             pstBundle->pstSam->dWorldPosY + pstBundle->pstSam->u8Height))
     {
         FLAG_CLEAR(pstBundle->pstSam->u16Flags, ENTITY_IS_IN_MID_AIR);
@@ -208,6 +216,15 @@ static void _MainLoop(void *pArg)
     {
         FLAG_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_IN_MID_AIR);
     }
+
+    // Resurrect dead player entity if necessary.
+    if (FLAG_IS_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_DEAD))
+    {
+        ResurrectEntity(pstBundle->pstSam);
+    }
+
+    // Update player entity.
+    UpdateEntity(pstBundle->pstSam, pstBundle->dDeltaTime);
 
     #ifdef __EMSCRIPTEN__
     SDL_RenderClear(pstBundle->pstVideo->pstRenderer);
@@ -220,10 +237,6 @@ static void _MainLoop(void *pArg)
             pstBundle->pstVideo->pstRenderer,
             pstBundle->pstBG[u8Index],
             pstBundle->dCameraPosY);
-
-            FLAG_CLEAR(
-                pstBundle->pstBG[u8Index]->u16Flags,
-                BACKGROUND_SCROLL_DIRECTION);
     }
 
     DrawMap(
@@ -238,15 +251,6 @@ static void _MainLoop(void *pArg)
     DrawEntity(
         pstBundle->pstVideo->pstRenderer,
         pstBundle->pstSam,
-        pstBundle->dCameraPosX,
-        pstBundle->dCameraPosY);
-
-    DrawMap(
-        pstBundle->pstVideo->pstRenderer,
-        pstBundle->pstMap,
-        "World",
-        0,
-        1,
         pstBundle->dCameraPosX,
         pstBundle->dCameraPosY);
 
@@ -335,7 +339,7 @@ int32_t main(int32_t s32ArgC, char *pacArgV[])
         pstBG[u8Index]->dWorldPosY = pstMap->u32Height - pstBG[u8Index]->s32Height;
     }
 
-    pstSam = InitEntity(24, 40, 264, 200, pstMap->u32Width);
+    pstSam = InitEntity(24, 40, 64, 568, pstMap->u32Width, pstMap->u32Height);
     if (NULL == pstSam)
     {
         _s32ExecStatus = EXIT_FAILURE;

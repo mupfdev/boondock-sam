@@ -80,12 +80,27 @@ int8_t DrawEntity(
 }
 
 /**
+ * @brief   Fix entity position along the y-axis.  Experimental.
+ * @param   pstEntity an Entity.  See @ref struct Entity.
+ * @ingroup Entity
+ */
+void FixEntityPositionY(Entity *pstEntity)
+{
+    while (0 != ((int32_t)pstEntity->dWorldPosY % 8))
+    {
+        pstEntity->dWorldPosY = floor(pstEntity->dWorldPosY);
+        pstEntity->dWorldPosY -= 1.0;
+    }
+}
+
+/**
  * @brief   Initialise Entity.
- * @param   u8Width     width  of the Entity in pixel.
- * @param   u8Height    height of the Entity in pixel.
- * @param   dPosX       initial world position along the x-axis.
- * @param   dPosY       initial world position along the y-axis.
- * @param   u32MapWidth width of the map.  See @ref struct Map.
+ * @param   u8Width      width  of the Entity in pixel.
+ * @param   u8Height     height of the Entity in pixel.
+ * @param   dPosX        initial world position along the x-axis.
+ * @param   dPosY        initial world position along the y-axis.
+ * @param   u32MapWidth  width  of the map.  See @ref struct Map.
+ * @param   u32MapHeight height of the map.  See @ref struct Map.
  * @return  an Entity on success, NULL on failure.
  * @ingroup Entity
  */
@@ -94,7 +109,8 @@ Entity *InitEntity(
     const uint8_t  u8Height,
     const double   dPosX,
     const double   dPosY,
-    const uint32_t u32MapWidth)
+    const uint32_t u32MapWidth,
+    const uint32_t u32MapHeight)
 {
     static Entity *pstEntity;
     pstEntity = malloc(sizeof(struct Entity_t));
@@ -110,6 +126,7 @@ Entity *InitEntity(
     pstEntity->u8Height            = u8Height;
     pstEntity->u8Width             = u8Width;
     pstEntity->u32MapWidth         = u32MapWidth;
+    pstEntity->u32MapHeight        = u32MapHeight;
     pstEntity->dFrameAnimationFPS  =  20;
     pstEntity->u8FrameStart        =   0;
     pstEntity->u8FrameEnd          =  12;
@@ -233,7 +250,6 @@ void UpdateEntity(
     }
     if (pstEntity->dVelocityX < 0) { pstEntity->dVelocityX = 0; }
 
-
     // Set horizontal entity position.
     if (pstEntity->dVelocityX > 0)
     {
@@ -247,6 +263,27 @@ void UpdateEntity(
         }
     }
 
+    // Connect left and right map border and vice versa.
+    if (pstEntity->dWorldPosX <= 0)
+    {
+        pstEntity->dWorldPosX = pstEntity->u32MapWidth - pstEntity->u8Width;
+    }
+    else if (pstEntity->dWorldPosX >= pstEntity->u32MapWidth - pstEntity->u8Width)
+    {
+        pstEntity->dWorldPosX = 0;
+    }
+
+    // Kill entity when it falls out of the map.
+    if (pstEntity->dWorldPosY >= pstEntity->u32MapHeight + pstEntity->u8Height)
+    {
+        FLAG_SET(pstEntity->u16Flags, ENTITY_IS_DEAD);
+    }
+
+    if (pstEntity->dWorldPosY >= pstEntity->u32MapHeight + pstEntity->u8Height)
+    {
+        pstEntity->dWorldPosY = pstEntity->u32MapHeight + pstEntity->u8Height;
+    }
+
     // Apply gravity.
     if (FLAG_IS_SET(pstEntity->u16Flags, ENTITY_IS_IN_MID_AIR))
     {
@@ -258,23 +295,8 @@ void UpdateEntity(
     }
     else
     {
-        // Experimental y-coordinate correction.
-        while (0 != ((int32_t)pstEntity->dWorldPosY % 8))
-        {
-            pstEntity->dWorldPosY = floor(pstEntity->dWorldPosY);
-            pstEntity->dWorldPosY -= 1.0;
-        }
-    }
-
-    // Connect left and right map border and vice versa.
-    if (pstEntity->dWorldPosX < 0 - (pstEntity->u8Width))
-    {
-        pstEntity->dWorldPosX = pstEntity->u32MapWidth - (pstEntity->u8Width);
-    }
-
-    if (pstEntity->dWorldPosX > pstEntity->u32MapWidth - (pstEntity->u8Width))
-    {
-        pstEntity->dWorldPosX = 0 - (pstEntity->u8Width);
+        FixEntityPositionY(pstEntity);
+        pstEntity->dVelocityY = 0;
     }
 
     // Update frame.

@@ -236,7 +236,7 @@ uint8_t IsMapCoordOfType(
     double      dPosX,
     double      dPosY)
 {
-    dPosX /= pstMap->pstTmxMap->tile_width + 1;
+    dPosX /= pstMap->pstTmxMap->tile_width;
     dPosY /= pstMap->pstTmxMap->tile_height;
 
     // Prevent segfaults by setting boundaries.
