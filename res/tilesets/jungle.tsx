@@ -6,23 +6,32 @@
  <tile id="41" type="Floor"/>
  <tile id="42" type="Floor"/>
  <tile id="43" type="Floor"/>
- <tile id="45" type="Floor"/>
- <tile id="46" type="Floor"/>
- <tile id="48" type="Floor"/>
- <tile id="50" type="Floor"/>
- <tile id="126" type="Floor"/>
- <tile id="127" type="Floor"/>
- <tile id="128" type="Floor"/>
- <tile id="129" type="Floor"/>
- <tile id="130" type="Floor"/>
- <tile id="201" type="Floor"/>
- <tile id="202" type="Floor"/>
+ <tile id="79" type="Floor"/>
+ <tile id="80" type="Floor"/>
+ <tile id="81" type="Floor"/>
+ <tile id="268" type="Floor"/>
+ <tile id="269" type="Floor"/>
+ <tile id="270" type="Floor"/>
+ <tile id="271" type="Floor"/>
+ <tile id="272" type="Floor"/>
  <tile id="273" type="Floor"/>
  <tile id="274" type="Floor"/>
  <tile id="275" type="Floor"/>
  <tile id="277" type="Floor"/>
  <tile id="278" type="Floor"/>
  <tile id="279" type="Floor"/>
+ <tile id="280" type="Floor"/>
+ <tile id="281" type="Floor"/>
+ <tile id="282" type="Floor"/>
+ <tile id="285" type="Floor"/>
+ <tile id="286" type="Floor"/>
+ <tile id="323" type="Floor"/>
+ <tile id="324" type="Floor"/>
+ <tile id="325" type="Floor"/>
+ <tile id="326" type="Floor"/>
+ <tile id="386" type="Floor"/>
+ <tile id="387" type="Floor"/>
+ <tile id="388" type="Floor"/>
  <tile id="468" type="Floor"/>
  <tile id="469" type="Floor"/>
  <tile id="470" type="Floor"/>
@@ -43,4 +52,8 @@
  <tile id="514" type="Floor"/>
  <tile id="515" type="Floor"/>
  <tile id="516" type="Floor"/>
+ <tile id="636" type="Floor"/>
+ <tile id="637" type="Floor"/>
+ <tile id="638" type="Floor"/>
+ <tile id="639" type="Floor"/>
 </tileset>
