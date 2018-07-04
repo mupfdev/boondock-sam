@@ -54,6 +54,7 @@ typedef struct Entity_t
     double       dInitialJumpVelocity;
     double       dInitialWorldPosX;
     double       dInitialWorldPosY;
+    double       dInitialWorldGravitation;
     double       dVelocityX;
     double       dVelocityY;
     double       dDistanceX;

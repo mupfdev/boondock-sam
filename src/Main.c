@@ -45,11 +45,11 @@ typedef struct MainLoopBundle_t
 
 static void _MainLoop(void *pArg)
 {
-    uint16_t        u16Flags        = 0;
-    MainLoopBundle *pstBundle       = (MainLoopBundle *)pArg;
-    pstBundle->dTimeB               = SDL_GetTicks();
-    pstBundle->dDeltaTime           = (pstBundle->dTimeB - pstBundle->dTimeA) / 1000;
-    pstBundle->dTimeA               = pstBundle->dTimeB;
+    uint16_t        u16Flags  = 0;
+    MainLoopBundle *pstBundle = (MainLoopBundle *)pArg;
+    pstBundle->dTimeB         = SDL_GetTicks();
+    pstBundle->dDeltaTime     = (pstBundle->dTimeB - pstBundle->dTimeA) / 1000;
+    pstBundle->dTimeA         = pstBundle->dTimeB;
 
     // Process keyboard input.
     const uint8_t *u8KeyState;
@@ -103,7 +103,9 @@ static void _MainLoop(void *pArg)
 
     if (u8KeyState[SDL_SCANCODE_SPACE])
     {
-        if (FLAG_IS_NOT_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_JUMPING))
+        if (
+            (FLAG_IS_NOT_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_JUMPING)) &&
+            (FLAG_IS_NOT_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_IN_MID_AIR)) )
         {
             FLAG_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_JUMPING);
         }

@@ -120,38 +120,39 @@ Entity *InitEntity(
         return NULL;
     }
 
-    pstEntity->dAcceleration        =   5.0;
-    pstEntity->dDeceleration        =   5.0;
-    pstEntity->dJumpForce           =   4.0;
-    pstEntity->u16Flags             =   0;
-    pstEntity->u8Height             = u8Height;
-    pstEntity->u8Width              = u8Width;
-    pstEntity->u32MapWidth          = u32MapWidth;
-    pstEntity->u32MapHeight         = u32MapHeight;
-    pstEntity->dFrameAnimationFPS   =  20;
-    pstEntity->u8FrameStart         =   0;
-    pstEntity->u8FrameEnd           =  12;
-    pstEntity->u8FrameOffsetY       =   0;
-    pstEntity->dMaxVelocityX        =   3.0;
-    pstEntity->dWorldMeterInPixel   =  48.0;
-    pstEntity->dWorldGravitation    =   9.81;
-    pstEntity->dWorldPosX           = dPosX;
-    pstEntity->dWorldPosY           = dPosY;
+    pstEntity->dAcceleration            =   5.0;
+    pstEntity->dDeceleration            =   5.0;
+    pstEntity->dJumpForce               =   4.0;
+    pstEntity->u16Flags                 =   0;
+    pstEntity->u8Height                 = u8Height;
+    pstEntity->u8Width                  = u8Width;
+    pstEntity->u32MapWidth              = u32MapWidth;
+    pstEntity->u32MapHeight             = u32MapHeight;
+    pstEntity->dFrameAnimationFPS       =  20;
+    pstEntity->u8FrameStart             =   0;
+    pstEntity->u8FrameEnd               =  12;
+    pstEntity->u8FrameOffsetY           =   0;
+    pstEntity->dMaxVelocityX            =   3.0;
+    pstEntity->dWorldMeterInPixel       =  48.0;
+    pstEntity->dWorldGravitation        =   9.81;
+    pstEntity->dWorldPosX               = dPosX;
+    pstEntity->dWorldPosY               = dPosY;
 
-    pstEntity->pstSprite            = NULL;
-    pstEntity->u8Frame              =   0;
-    pstEntity->dFrameDuration       =   0.0;
-    pstEntity->stBB.dBottom         =   0;
-    pstEntity->stBB.dLeft           = u8Height;
-    pstEntity->stBB.dRight          = u8Width;
-    pstEntity->stBB.dTop            =   0;
-    pstEntity->dInitialJumpVelocity =   0.0;
-    pstEntity->dInitialWorldPosX    = dPosX;
-    pstEntity->dInitialWorldPosY    = dPosY;
-    pstEntity->dVelocityX           =   0.0;
-    pstEntity->dVelocityY           =   0.0;
-    pstEntity->dDistanceX           =   0.0;
-    pstEntity->dDistanceY           =   0.0;
+    pstEntity->pstSprite                = NULL;
+    pstEntity->u8Frame                  =   0;
+    pstEntity->dFrameDuration           =   0.0;
+    pstEntity->stBB.dBottom             =   0;
+    pstEntity->stBB.dLeft               = u8Height;
+    pstEntity->stBB.dRight              = u8Width;
+    pstEntity->stBB.dTop                =   0;
+    pstEntity->dInitialJumpVelocity     =   0.0;
+    pstEntity->dInitialWorldPosX        = dPosX;
+    pstEntity->dInitialWorldPosY        = dPosY;
+    pstEntity->dInitialWorldGravitation = pstEntity->dWorldGravitation;
+    pstEntity->dVelocityX               =   0.0;
+    pstEntity->dVelocityY               =   0.0;
+    pstEntity->dDistanceX               =   0.0;
+    pstEntity->dDistanceY               =   0.0;
 
     return pstEntity;
 }
@@ -164,7 +165,7 @@ Entity *InitEntity(
  */
 int8_t IsEntityJumping(Entity *pstEntity)
 {
-    if (0.0 < pstEntity->dVelocityY)
+    if (0.0 > pstEntity->dVelocityY)
     {
         return 1;
     }
@@ -207,10 +208,12 @@ int8_t LoadEntitySprite(
  */
 void ResurrectEntity(Entity *pstEntity)
 {
-    pstEntity->u16Flags   &= ~(1 << ENTITY_IS_DEAD);
-    pstEntity->u16Flags   &= ~(1 << ENTITY_IS_TRAVELING);
-    pstEntity->dWorldPosX  = pstEntity->dInitialWorldPosX;
-    pstEntity->dWorldPosY  = pstEntity->dInitialWorldPosY;
+    FLAG_CLEAR(pstEntity->u16Flags, ENTITY_IS_DEAD);
+    FLAG_CLEAR(pstEntity->u16Flags, ENTITY_IS_IN_MID_AIR);
+    FLAG_CLEAR(pstEntity->u16Flags, ENTITY_IS_JUMPING);
+
+    pstEntity->dWorldPosX = pstEntity->dInitialWorldPosX;
+    pstEntity->dWorldPosY = pstEntity->dInitialWorldPosY;
 }
 
 /**
@@ -258,20 +261,34 @@ void UpdateEntity(
         if (FLAG_IS_SET(pstEntity->u16Flags, ENTITY_IS_JUMPING))
         {
             pstEntity->dInitialJumpVelocity = pstEntity->dVelocityX;
+
             pstEntity->dVelocityY =
                 -pstEntity->dJumpForce
                 + -pstEntity->dInitialJumpVelocity
                 * dDeltaTime;
 
-            FLAG_SET(pstEntity->u16Flags, ENTITY_IS_IN_MID_AIR);
+            if (IsEntityJumping(pstEntity))
+            {
+                FLAG_SET(pstEntity->u16Flags, ENTITY_IS_IN_MID_AIR);
+            }
         }
     }
 
     if (FLAG_IS_SET(pstEntity->u16Flags, ENTITY_IS_IN_MID_AIR))
     {
-        if (IsEntityJumping(pstEntity))
+        if (0 == IsEntityJumping(pstEntity))
         {
-            FLAG_CLEAR(pstEntity->u16Flags, ENTITY_IS_JUMPING);
+            if (FLAG_IS_SET(pstEntity->u16Flags, ENTITY_IS_JUMPING))
+            {
+                FLAG_CLEAR(pstEntity->u16Flags, ENTITY_IS_JUMPING);
+                // Increase world gravitation after the peak of a jump.
+                pstEntity->dWorldGravitation *= 2.2;
+            }
+        }
+        else
+        {
+            // Reset world gravitation to it's initial value.
+            pstEntity->dWorldGravitation = pstEntity->dInitialWorldGravitation;
         }
 
         double dG = pstEntity->dWorldMeterInPixel * pstEntity->dWorldGravitation;
@@ -282,8 +299,8 @@ void UpdateEntity(
     else
     {
         FixEntityPositionY(pstEntity);
-        pstEntity->dVelocityY           = 0;
         pstEntity->dInitialJumpVelocity = 0;
+        pstEntity->dVelocityY           = 0;
     }
 
     // Increase/decrease horizontal velocity if entity is traveling.
@@ -305,13 +322,19 @@ void UpdateEntity(
     // Set horizontal position.
     if (pstEntity->dVelocityX > 0)
     {
+        double dFactor = 1;
+        if (FLAG_IS_SET(pstEntity->u16Flags, ENTITY_IS_JUMPING))
+        {
+            dFactor = 0.8; // Slow down entity if it is jumping.
+        }
+
         if (FLAG_IS_SET(pstEntity->u16Flags, ENTITY_DIRECTION))
         {
-            pstEntity->dWorldPosX -= pstEntity->dVelocityX;
+            pstEntity->dWorldPosX -= pstEntity->dVelocityX * dFactor;
         }
         else
         {
-            pstEntity->dWorldPosX += pstEntity->dVelocityX;
+            pstEntity->dWorldPosX += pstEntity->dVelocityX * dFactor;
         }
     }
 
