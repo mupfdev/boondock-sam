@@ -6,9 +6,6 @@
  <tile id="41" type="Floor"/>
  <tile id="42" type="Floor"/>
  <tile id="43" type="Floor"/>
- <tile id="79" type="Floor"/>
- <tile id="80" type="Floor"/>
- <tile id="81" type="Floor"/>
  <tile id="268" type="Floor"/>
  <tile id="269" type="Floor"/>
  <tile id="270" type="Floor"/>
@@ -42,16 +39,6 @@
  <tile id="475" type="Floor"/>
  <tile id="476" type="Floor"/>
  <tile id="477" type="Floor"/>
- <tile id="507" type="Floor"/>
- <tile id="508" type="Floor"/>
- <tile id="509" type="Floor"/>
- <tile id="510" type="Floor"/>
- <tile id="511" type="Floor"/>
- <tile id="512" type="Floor"/>
- <tile id="513" type="Floor"/>
- <tile id="514" type="Floor"/>
- <tile id="515" type="Floor"/>
- <tile id="516" type="Floor"/>
  <tile id="636" type="Floor"/>
  <tile id="637" type="Floor"/>
  <tile id="638" type="Floor"/>

@@ -60,8 +60,8 @@ static void _MainLoop(void *pArg)
     }
     u8KeyState = SDL_GetKeyboardState(NULL);
 
-    // Reset ENTITY_IS_MOVING flag (in case no key is pressed).
-    FLAG_CLEAR(pstBundle->pstSam->u16Flags, ENTITY_IS_MOVING);
+    // Reset ENTITY_IS_TRAVELING flag (in case no key is pressed).
+    FLAG_CLEAR(pstBundle->pstSam->u16Flags, ENTITY_IS_TRAVELING);
 
     #ifndef __EMSCRIPTEN__
     if (u8KeyState[SDL_SCANCODE_Q])
@@ -91,34 +91,42 @@ static void _MainLoop(void *pArg)
 
     if (u8KeyState[SDL_SCANCODE_LEFT])
     {
-        FLAG_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_MOVING);
+        FLAG_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_TRAVELING);
         FLAG_SET(pstBundle->pstSam->u16Flags, ENTITY_DIRECTION);
     }
 
     if (u8KeyState[SDL_SCANCODE_RIGHT])
     {
-        FLAG_SET(pstBundle->pstSam->u16Flags,   ENTITY_IS_MOVING);
+        FLAG_SET(pstBundle->pstSam->u16Flags,   ENTITY_IS_TRAVELING);
         FLAG_CLEAR(pstBundle->pstSam->u16Flags, ENTITY_DIRECTION);
+    }
+
+    if (u8KeyState[SDL_SCANCODE_SPACE])
+    {
+        if (FLAG_IS_NOT_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_JUMPING))
+        {
+            FLAG_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_JUMPING);
+        }
     }
 
     // Set camera position.
     pstBundle->dCameraPosX =
-        pstBundle->pstSam->dWorldPosX         -
-        pstBundle->pstVideo->s32WindowWidth   /
-        (pstBundle->pstVideo->dZoomLevel * 2) +
-        (pstBundle->pstSam->u8Width      / 2);
+        pstBundle->pstSam->dWorldPosX
+        - pstBundle->pstVideo->s32WindowWidth
+        / (pstBundle->pstVideo->dZoomLevel * 2)
+        + (pstBundle->pstSam->u8Width      / 2);
 
     pstBundle->dCameraPosY =
-        pstBundle->pstSam->dWorldPosY         -
-        pstBundle->pstVideo->s32WindowHeight  /
-        (pstBundle->pstVideo->dZoomLevel * 2) +
-        (pstBundle->pstSam->u8Height     / 2);
+        pstBundle->pstSam->dWorldPosY
+        - pstBundle->pstVideo->s32WindowHeight
+        / (pstBundle->pstVideo->dZoomLevel * 2)
+        + (pstBundle->pstSam->u8Height     / 2);
 
     // Set camera boundaries to map size.
-    pstBundle->dCameraMaxPosX = pstBundle->pstMap->u32Width -
-        (pstBundle->pstVideo->s32WindowWidth  / pstBundle->pstVideo->dZoomLevel);
-    pstBundle->dCameraMaxPosY = pstBundle->pstMap->u32Height -
-        (pstBundle->pstVideo->s32WindowHeight / pstBundle->pstVideo->dZoomLevel);
+    pstBundle->dCameraMaxPosX = pstBundle->pstMap->u32Width
+        - (pstBundle->pstVideo->s32WindowWidth  / pstBundle->pstVideo->dZoomLevel);
+    pstBundle->dCameraMaxPosY = pstBundle->pstMap->u32Height
+        - (pstBundle->pstVideo->s32WindowHeight / pstBundle->pstVideo->dZoomLevel);
 
     if (pstBundle->dCameraPosX < 0)
     {
@@ -180,13 +188,21 @@ static void _MainLoop(void *pArg)
     pstBundle->pstBG[0]->dVelocity = pstBundle->pstBG[4]->dVelocity / 5;
 
     // Set sprite animation.
+    FLAG_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_IDLING);
+
     if (FLAG_IS_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_IDLING))
     {
         SetEntitySpriteAnimation(pstBundle->pstSam, 0, 11, 0, 10);
     }
+
+    if (FLAG_IS_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_TRAVELING))
+    {
+        SetEntitySpriteAnimation(pstBundle->pstSam, 0, 7, 1, 20);
+    }
+
     if (FLAG_IS_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_IN_MID_AIR))
     {
-        if (FLAG_IS_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_JUMPING))
+        if (IsEntityJumping(pstBundle->pstSam))
         {
             SetEntitySpriteAnimation(pstBundle->pstSam, 14, 14, 0, 20);
         }
@@ -197,11 +213,6 @@ static void _MainLoop(void *pArg)
             SetEntitySpriteAnimation(pstBundle->pstSam, 14, 14, 1, 20);
         }
     }
-    if (FLAG_IS_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_MOVING))
-    {
-        SetEntitySpriteAnimation(pstBundle->pstSam, 0, 7, 1, 20);
-    }
-    FLAG_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_IDLING);
 
     // Set up collision detection.
     if (IsMapCoordOfType(
@@ -226,11 +237,11 @@ static void _MainLoop(void *pArg)
     // Update player entity.
     UpdateEntity(pstBundle->pstSam, pstBundle->dDeltaTime);
 
+    // Render scene.
     #ifdef __EMSCRIPTEN__
     SDL_RenderClear(pstBundle->pstVideo->pstRenderer);
     #endif
 
-    // Render scene.
     for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
     {
         DrawBackground(

@@ -79,6 +79,7 @@ Q:     quit
 2:     zoom in
 LEFT:  walk left
 RIGHT: walk right
+SPACE: jump
 ```
 
 ## License and Credits

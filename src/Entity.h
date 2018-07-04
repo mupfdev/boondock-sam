@@ -19,7 +19,7 @@ enum EntityFlags
     ENTITY_IS_IDLING     = 2,
     ENTITY_IS_IN_MID_AIR = 3,
     ENTITY_IS_JUMPING    = 4,
-    ENTITY_IS_MOVING     = 5,
+    ENTITY_IS_TRAVELING  = 5,
 };
 
 /**
@@ -29,6 +29,7 @@ typedef struct Entity_t
 {
     double       dAcceleration;
     double       dDeceleration;
+    double       dJumpForce;
     uint16_t     u16Flags;
     uint8_t      u8Height;
     uint8_t      u8Width;
@@ -50,10 +51,12 @@ typedef struct Entity_t
     uint8_t      u8Frame;
     double       dFrameDuration;
     AABB         stBB;
+    double       dInitialJumpVelocity;
     double       dInitialWorldPosX;
     double       dInitialWorldPosY;
     double       dVelocityX;
     double       dVelocityY;
+    double       dDistanceX;
     double       dDistanceY;
 } Entity;
 
@@ -74,6 +77,8 @@ Entity *InitEntity(
     const uint32_t u32MapHeight
 );
 
+int8_t IsEntityJumping(Entity *pstEntity);
+
 int8_t LoadEntitySprite(
     Entity       *pstEntity,
     SDL_Renderer *pstRenderer,
@@ -91,6 +96,6 @@ void SetEntitySpriteAnimation(
 
 void UpdateEntity(
     Entity *pstEntity,
-    double dDeltaTime);
+    double  dDeltaTime);
 
 #endif

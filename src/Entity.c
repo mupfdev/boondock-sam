@@ -120,41 +120,60 @@ Entity *InitEntity(
         return NULL;
     }
 
-    pstEntity->dAcceleration       = 400;
-    pstEntity->dDeceleration       = 200;
-    pstEntity->u16Flags            =   0;
-    pstEntity->u8Height            = u8Height;
-    pstEntity->u8Width             = u8Width;
-    pstEntity->u32MapWidth         = u32MapWidth;
-    pstEntity->u32MapHeight        = u32MapHeight;
-    pstEntity->dFrameAnimationFPS  =  20;
-    pstEntity->u8FrameStart        =   0;
-    pstEntity->u8FrameEnd          =  12;
-    pstEntity->u8FrameOffsetY      =   0;
-    pstEntity->dMaxVelocityX       = 100;
-    pstEntity->dWorldMeterInPixel  =  48;
-    pstEntity->dWorldGravitation   =   9.81;
-    pstEntity->dWorldPosX          = dPosX;
-    pstEntity->dWorldPosY          = dPosY;
+    pstEntity->dAcceleration        =   5.0;
+    pstEntity->dDeceleration        =   5.0;
+    pstEntity->dJumpForce           =   4.0;
+    pstEntity->u16Flags             =   0;
+    pstEntity->u8Height             = u8Height;
+    pstEntity->u8Width              = u8Width;
+    pstEntity->u32MapWidth          = u32MapWidth;
+    pstEntity->u32MapHeight         = u32MapHeight;
+    pstEntity->dFrameAnimationFPS   =  20;
+    pstEntity->u8FrameStart         =   0;
+    pstEntity->u8FrameEnd           =  12;
+    pstEntity->u8FrameOffsetY       =   0;
+    pstEntity->dMaxVelocityX        =   3.0;
+    pstEntity->dWorldMeterInPixel   =  48.0;
+    pstEntity->dWorldGravitation    =   9.81;
+    pstEntity->dWorldPosX           = dPosX;
+    pstEntity->dWorldPosY           = dPosY;
 
-    pstEntity->pstSprite           = NULL;
-    pstEntity->u8Frame             =   0;
-    pstEntity->dFrameDuration      =   0;
-    pstEntity->stBB.dBottom        =   0;
-    pstEntity->stBB.dLeft          = u8Height;
-    pstEntity->stBB.dRight         = u8Width;
-    pstEntity->stBB.dTop           =   0;
-    pstEntity->dInitialWorldPosX   = dPosX;
-    pstEntity->dInitialWorldPosY   = dPosY;
-    pstEntity->dDistanceY          =   0;
-    pstEntity->dVelocityX          =   0;
-    pstEntity->dVelocityY          =   0;
+    pstEntity->pstSprite            = NULL;
+    pstEntity->u8Frame              =   0;
+    pstEntity->dFrameDuration       =   0.0;
+    pstEntity->stBB.dBottom         =   0;
+    pstEntity->stBB.dLeft           = u8Height;
+    pstEntity->stBB.dRight          = u8Width;
+    pstEntity->stBB.dTop            =   0;
+    pstEntity->dInitialJumpVelocity =   0.0;
+    pstEntity->dInitialWorldPosX    = dPosX;
+    pstEntity->dInitialWorldPosY    = dPosY;
+    pstEntity->dVelocityX           =   0.0;
+    pstEntity->dVelocityY           =   0.0;
+    pstEntity->dDistanceX           =   0.0;
+    pstEntity->dDistanceY           =   0.0;
 
     return pstEntity;
 }
 
 /**
- * @brief   Load the Entity's sprite image.
+ * @brief   Check if entity is jumping.
+ * @param   pstEntity   an Entity.  See @ref struct Entity.
+ * @return  1 if entity is jumping, 0 if not.
+ * @ingroup Entity
+ */
+int8_t IsEntityJumping(Entity *pstEntity)
+{
+    if (0.0 < pstEntity->dVelocityY)
+    {
+        return 1;
+    }
+
+    return 0;
+}
+
+/**
+ * @brief   Load the entity's sprite image.
  * @param   pstEntity   an Entity.  See @ref struct Entity.
  * @param   pstRenderer a SDL rendering context.  See @ref struct Video.
  * @param   pacFilename the filename of the image.
@@ -189,7 +208,7 @@ int8_t LoadEntitySprite(
 void ResurrectEntity(Entity *pstEntity)
 {
     pstEntity->u16Flags   &= ~(1 << ENTITY_IS_DEAD);
-    pstEntity->u16Flags   &= ~(1 << ENTITY_IS_MOVING);
+    pstEntity->u16Flags   &= ~(1 << ENTITY_IS_TRAVELING);
     pstEntity->dWorldPosX  = pstEntity->dInitialWorldPosX;
     pstEntity->dWorldPosY  = pstEntity->dInitialWorldPosY;
 }
@@ -225,7 +244,7 @@ void SetEntitySpriteAnimation(
  */
 void UpdateEntity(
     Entity *pstEntity,
-    double dDeltaTime)
+    double  dDeltaTime)
 {
     // Update bounding box.
     pstEntity->stBB.dBottom = pstEntity->dWorldPosY + pstEntity->u8Height;
@@ -233,35 +252,75 @@ void UpdateEntity(
     pstEntity->stBB.dRight  = pstEntity->dWorldPosX + pstEntity->u8Width;
     pstEntity->stBB.dTop    = pstEntity->dWorldPosY;
 
-    // Increase/decrease vertical velocity if entity is in motion.
-    if (FLAG_IS_SET(pstEntity->u16Flags, ENTITY_IS_MOVING))
+    // Increase vertical velocity when entity is in mid air.
+    if (FLAG_IS_NOT_SET(pstEntity->u16Flags, ENTITY_IS_IN_MID_AIR))
     {
-        pstEntity->dVelocityX += pstEntity->dAcceleration * dDeltaTime;
+        if (FLAG_IS_SET(pstEntity->u16Flags, ENTITY_IS_JUMPING))
+        {
+            pstEntity->dInitialJumpVelocity = pstEntity->dVelocityX;
+            pstEntity->dVelocityY =
+                -pstEntity->dJumpForce
+                + -pstEntity->dInitialJumpVelocity
+                * dDeltaTime;
+
+            FLAG_SET(pstEntity->u16Flags, ENTITY_IS_IN_MID_AIR);
+        }
+    }
+
+    if (FLAG_IS_SET(pstEntity->u16Flags, ENTITY_IS_IN_MID_AIR))
+    {
+        if (IsEntityJumping(pstEntity))
+        {
+            FLAG_CLEAR(pstEntity->u16Flags, ENTITY_IS_JUMPING);
+        }
+
+        double dG = pstEntity->dWorldMeterInPixel * pstEntity->dWorldGravitation;
+        pstEntity->dDistanceY  = dG * dDeltaTime * dDeltaTime;
+        pstEntity->dVelocityY += pstEntity->dDistanceY;
+        pstEntity->dWorldPosY += pstEntity->dVelocityY;
+    }
+    else
+    {
+        FixEntityPositionY(pstEntity);
+        pstEntity->dVelocityY           = 0;
+        pstEntity->dInitialJumpVelocity = 0;
+    }
+
+    // Increase/decrease horizontal velocity if entity is traveling.
+    if (FLAG_IS_SET(pstEntity->u16Flags, ENTITY_IS_TRAVELING))
+    {
+        pstEntity->dDistanceX =
+            pstEntity->dWorldMeterInPixel
+            * pstEntity->dAcceleration
+            * dDeltaTime
+            * dDeltaTime;
+
+        pstEntity->dVelocityX += pstEntity->dDistanceX;
     }
     else
     {
         pstEntity->dVelocityX -= pstEntity->dDeceleration * dDeltaTime;
     }
 
-    // Set vertical velocity limits.
+    // Set horizontal position.
+    if (pstEntity->dVelocityX > 0)
+    {
+        if (FLAG_IS_SET(pstEntity->u16Flags, ENTITY_DIRECTION))
+        {
+            pstEntity->dWorldPosX -= pstEntity->dVelocityX;
+        }
+        else
+        {
+            pstEntity->dWorldPosX += pstEntity->dVelocityX;
+        }
+    }
+
+    // Set horizontal velocity limits.
     if (pstEntity->dVelocityX >= pstEntity->dMaxVelocityX)
     {
         pstEntity->dVelocityX = pstEntity->dMaxVelocityX;
     }
     if (pstEntity->dVelocityX < 0) { pstEntity->dVelocityX = 0; }
-
-    // Set horizontal entity position.
-    if (pstEntity->dVelocityX > 0)
-    {
-        if (FLAG_IS_SET(pstEntity->u16Flags, ENTITY_DIRECTION))
-        {
-            pstEntity->dWorldPosX -= (pstEntity->dVelocityX * dDeltaTime);
-        }
-        else
-        {
-            pstEntity->dWorldPosX += (pstEntity->dVelocityX * dDeltaTime);
-        }
-    }
 
     // Connect left and right map border and vice versa.
     if (pstEntity->dWorldPosX <= 0)
@@ -282,21 +341,6 @@ void UpdateEntity(
     if (pstEntity->dWorldPosY >= pstEntity->u32MapHeight + pstEntity->u8Height)
     {
         pstEntity->dWorldPosY = pstEntity->u32MapHeight + pstEntity->u8Height;
-    }
-
-    // Apply gravity.
-    if (FLAG_IS_SET(pstEntity->u16Flags, ENTITY_IS_IN_MID_AIR))
-    {
-        double dG = pstEntity->dWorldMeterInPixel * pstEntity->dWorldGravitation;
-
-        pstEntity->dDistanceY  = dG * dDeltaTime * dDeltaTime;
-        pstEntity->dVelocityY += pstEntity->dDistanceY;
-        pstEntity->dWorldPosY += pstEntity->dVelocityY;
-    }
-    else
-    {
-        FixEntityPositionY(pstEntity);
-        pstEntity->dVelocityY = 0;
     }
 
     // Update frame.
