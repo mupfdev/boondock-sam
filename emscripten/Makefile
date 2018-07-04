@@ -4,4 +4,4 @@ all:
 	make -C ../ emscripten
 
 clean:
-	rm index.*
+	make -C ../ clean

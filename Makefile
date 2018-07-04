@@ -15,3 +15,4 @@ emscripten:
 clean:
 	rm -f $(OBJS)
 	rm -f $(OUT)
+	rm -f emscripten/index.*
