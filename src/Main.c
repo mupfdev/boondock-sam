@@ -177,7 +177,7 @@ static void _MainLoop(void *pArg)
     // Scroll background if camera is not locked.
     if (FLAG_IS_NOT_SET(u16Flags, CAMERA_IS_LOCKED))
     {
-        pstBundle->pstBG[4]->dVelocity = pstBundle->pstSam->dVelocityX  * pstBundle->dDeltaTime;
+        pstBundle->pstBG[4]->dVelocity = pstBundle->pstSam->dVelocityX / 2;
     }
     else
     {
