@@ -74,7 +74,7 @@ static void _MainLoop(void *pArg)
     }
     #endif
 
-    if (u8KeyState[SDL_SCANCODE_ESCAPE])
+    if (u8KeyState[SDL_SCANCODE_P])
     {
         if (0 == pstBundle->u8GameIsPaused)
         {
@@ -84,20 +84,13 @@ static void _MainLoop(void *pArg)
         }
     }
 
-    if (u8KeyState[SDL_SCANCODE_SPACE])
+    if (u8KeyState[SDL_SCANCODE_C])
     {
         if (1 == pstBundle->u8GameIsPaused)
         {
             PlaySfx(pstBundle->pstSfx[4], 4, 0);
             Mix_ResumeMusic();
             pstBundle->u8GameIsPaused = 0;
-        }
-        else if ( // Needs fixing: Entity jumps after unpause.
-            (FLAG_IS_NOT_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_JUMPING)) &&
-            (FLAG_IS_NOT_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_IN_MID_AIR)) )
-        {
-                PlaySfx(pstBundle->pstSfx[2], 2, 0);
-                FLAG_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_JUMPING);
         }
     }
 
@@ -132,6 +125,17 @@ static void _MainLoop(void *pArg)
     {
         FLAG_SET(pstBundle->pstSam->u16Flags,   ENTITY_IS_TRAVELING);
         FLAG_CLEAR(pstBundle->pstSam->u16Flags, ENTITY_DIRECTION);
+    }
+
+    if (u8KeyState[SDL_SCANCODE_SPACE])
+    {
+        if (
+            (FLAG_IS_NOT_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_JUMPING)) &&
+            (FLAG_IS_NOT_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_IN_MID_AIR)) )
+        {
+                PlaySfx(pstBundle->pstSfx[2], 2, 0);
+                FLAG_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_JUMPING);
+        }
     }
 
     // Set camera position.

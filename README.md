@@ -73,14 +73,15 @@ doxygen
 ## Controls
 
 ```
-ESCAPE: pause
-Q:      quit
-0:      set default zoom level
-1:      zoom out
-2:      zoom in
-LEFT:   walk left
-RIGHT:  walk right
-SPACE:  jump / unpause
+P:     pause
+C:     unpause
+Q:     quit
+0:     set default zoom level
+1:     zoom out
+2:     zoom in
+LEFT:  walk left
+RIGHT: walk right
+SPACE: jump
 ```
 
 ## License and Credits
