@@ -30,7 +30,6 @@ CFLAGS=\
 	-Wextra
 
 EMSCRIPTEN=\
-	--emrun \
 	$(SRCS) \
 	emscripten/lib/libxml2.bc \
 	-DWANT_ZLIB \

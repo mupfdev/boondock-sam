@@ -19,6 +19,10 @@
 #include <emscripten.h>
 #endif
 
+#ifndef __EMSCRIPTEN__
+#include "Audio.h"
+#endif
+
 #define CAMERA_IS_LOCKED 0
 #define EXIT_UNSET       2
 static  int32_t _s32ExecStatus = EXIT_UNSET;
@@ -31,8 +35,10 @@ static  int32_t _s32ExecStatus = EXIT_UNSET;
 typedef struct MainLoopBundle_t
 {
     Background *pstBG[5];
+    Sfx        *pstSfx[5];
     Entity     *pstSam;
     Map        *pstMap;
+    Music      *pstMusic;
     Video      *pstVideo;
     double      dTimeA;
     double      dTimeB;
@@ -41,6 +47,7 @@ typedef struct MainLoopBundle_t
     double      dCameraPosY;
     double      dCameraMaxPosX;
     double      dCameraMaxPosY;
+    uint8_t     u8GameIsPaused;
 } MainLoopBundle;
 
 static void _MainLoop(void *pArg)
@@ -69,6 +76,35 @@ static void _MainLoop(void *pArg)
         _s32ExecStatus = EXIT_SUCCESS;
     }
     #endif
+
+    if (u8KeyState[SDL_SCANCODE_ESCAPE])
+    {
+        if (0 == pstBundle->u8GameIsPaused)
+        {
+            Mix_PauseMusic();
+            PlaySfx(pstBundle->pstSfx[3], 3, 0);
+            pstBundle->u8GameIsPaused = 1;
+        }
+    }
+
+    if (u8KeyState[SDL_SCANCODE_SPACE])
+    {
+        if (1 == pstBundle->u8GameIsPaused)
+        {
+            PlaySfx(pstBundle->pstSfx[4], 4, 0);
+            Mix_ResumeMusic();
+            pstBundle->u8GameIsPaused = 0;
+        }
+        else if ( // Needs fixing: Entity jumps after unpause.
+            (FLAG_IS_NOT_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_JUMPING)) &&
+            (FLAG_IS_NOT_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_IN_MID_AIR)) )
+        {
+                PlaySfx(pstBundle->pstSfx[2], 2, 0);
+                FLAG_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_JUMPING);
+        }
+    }
+
+    if (1 == pstBundle->u8GameIsPaused) { return; };
 
     if (u8KeyState[SDL_SCANCODE_0])
     {
@@ -99,16 +135,6 @@ static void _MainLoop(void *pArg)
     {
         FLAG_SET(pstBundle->pstSam->u16Flags,   ENTITY_IS_TRAVELING);
         FLAG_CLEAR(pstBundle->pstSam->u16Flags, ENTITY_DIRECTION);
-    }
-
-    if (u8KeyState[SDL_SCANCODE_SPACE])
-    {
-        if (
-            (FLAG_IS_NOT_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_JUMPING)) &&
-            (FLAG_IS_NOT_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_IN_MID_AIR)) )
-        {
-            FLAG_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_JUMPING);
-        }
     }
 
     // Set camera position.
@@ -233,6 +259,7 @@ static void _MainLoop(void *pArg)
     // Resurrect dead player entity if necessary.
     if (FLAG_IS_SET(pstBundle->pstSam->u16Flags, ENTITY_IS_DEAD))
     {
+        PlaySfx(pstBundle->pstSfx[1], 1, 0);
         ResurrectEntity(pstBundle->pstSam);
     }
 
@@ -289,10 +316,13 @@ static void _MainLoop(void *pArg)
 int32_t main(int32_t s32ArgC, char *pacArgV[])
 {
     Background     *pstBG[5]  = { NULL };
+    Sfx            *pstSfx[5] = { NULL };
     MainLoopBundle *pstBundle = NULL;
     Config          stConfig;
     Entity         *pstSam    = NULL;
     Map            *pstMap    = NULL;
+    Mixer          *pstMixer  = NULL;
+    Music          *pstMusic  = NULL;
     Video          *pstVideo  = NULL;
 
     if (s32ArgC > 1)
@@ -328,6 +358,20 @@ int32_t main(int32_t s32ArgC, char *pacArgV[])
         goto quit;
     }
 
+    pstMixer = InitMixer();
+    if (NULL == pstMixer)
+    {
+        _s32ExecStatus = EXIT_FAILURE;
+        goto quit;
+    }
+    pstMusic = InitMusic("res/music/cheap_4track.ogg");
+    if (NULL == pstMusic)
+    {
+        _s32ExecStatus = EXIT_FAILURE;
+        goto quit;
+    }
+    if (pstMixer) { PlayMusic(pstMusic, -1); }
+
     for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
     {
         const char *pacBackgroundList[5] = {
@@ -350,6 +394,22 @@ int32_t main(int32_t s32ArgC, char *pacArgV[])
         }
 
         pstBG[u8Index]->dWorldPosY = pstMap->u32Height - pstBG[u8Index]->s32Height;
+
+        const char *pacSfxList[5] = {
+            "res/sfx/dead1.wav",
+            "res/sfx/dead2.wav",
+            "res/sfx/jump.wav",
+            "res/sfx/pause.wav",
+            "res/sfx/unpause.wav"
+        };
+
+        pstSfx[u8Index] = InitSfx(pacSfxList[u8Index]);
+
+        if (NULL == pstSfx[u8Index])
+        {
+            _s32ExecStatus = EXIT_FAILURE;
+            goto quit;
+        }
     }
 
     pstSam = InitEntity(24, 40, 64, 568, pstMap->u32Width, pstMap->u32Height);
@@ -372,18 +432,21 @@ int32_t main(int32_t s32ArgC, char *pacArgV[])
         goto quit;
     }
 
-    pstBundle->pstVideo       = pstVideo;
     pstBundle->pstMap         = pstMap;
+    pstBundle->pstMusic       = pstMusic;
     pstBundle->pstSam         = pstSam;
+    pstBundle->pstVideo       = pstVideo;
     pstBundle->dTimeA         = SDL_GetTicks();
     pstBundle->dCameraPosX    = 0;
     pstBundle->dCameraPosY    = 0;
     pstBundle->dCameraMaxPosX = 0;
     pstBundle->dCameraMaxPosY = 0;
+    pstBundle->u8GameIsPaused = 0;
 
     for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
     {
-        pstBundle->pstBG[u8Index] = pstBG[u8Index];
+        pstBundle->pstBG[u8Index]  = pstBG[u8Index];
+        pstBundle->pstSfx[u8Index] = pstSfx[u8Index];
     }
 
     #ifdef __EMSCRIPTEN__
@@ -405,10 +468,14 @@ quit:
     for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
     {
         free(pstBG[u8Index]);
+        free(pstSfx[u8Index]);
     }
+
     FreeMap(pstMap);
-    free(pstSam);
+    FreeMixer(pstMixer);
     free(pstBundle);
+    free(pstMusic);
+    free(pstSam);
     TerminateVideo(pstVideo);
 
     return _s32ExecStatus;

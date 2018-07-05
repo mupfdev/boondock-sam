@@ -73,13 +73,14 @@ doxygen
 ## Controls
 
 ```
-Q:     quit
-0:     set default zoom level
-1:     zoom out
-2:     zoom in
-LEFT:  walk left
-RIGHT: walk right
-SPACE: jump
+ESCAPE: pause
+Q:      quit
+0:      set default zoom level
+1:      zoom out
+2:      zoom in
+LEFT:   walk left
+RIGHT:  walk right
+SPACE:  jump / unpause
 ```
 
 ## License and Credits
@@ -96,3 +97,5 @@ BSD licence.  See the file [LICENSE.txt](src/inih/LICENSE.txt) for
 details.
 
 [Jungle Asset Pack](https://jesse-m.itch.io/jungle-pack) by Jesse M.
+
+[Cheap 4track](https://opengameart.org/content/cheap-4track) by Emma M. Andersson.
