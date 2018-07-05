@@ -32,12 +32,14 @@ CFLAGS=\
 EMSCRIPTEN=\
 	$(SRCS) \
 	emscripten/lib/libxml2.bc \
+	emscripten/lib/libSDL2_mixer.bc \
 	-DWANT_ZLIB \
 	-I./emscripten/include \
 	-Os -msse -msse2 \
 	-s USE_SDL=2 \
 	-s USE_SDL_IMAGE=2 \
 	-s SDL2_IMAGE_FORMATS='["png"]' \
+	-s USE_VORBIS=1 \
 	-s USE_ZLIB=1 \
 	--preload-file emscripten.ini \
 	--preload-file res \

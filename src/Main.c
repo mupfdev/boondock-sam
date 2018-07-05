@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include "AABB.h"
+#include "Audio.h"
 #include "Background.h"
 #include "Config.h"
 #include "Entity.h"
@@ -17,10 +18,6 @@
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
-#endif
-
-#ifndef __EMSCRIPTEN__
-#include "Audio.h"
 #endif
 
 #define CAMERA_IS_LOCKED 0
