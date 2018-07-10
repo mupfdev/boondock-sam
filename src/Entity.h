@@ -99,4 +99,4 @@ void UpdateEntity(
     Entity *pstEntity,
     double  dDeltaTime);
 
-#endif
+#endif // _ENTITY_H_

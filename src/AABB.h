@@ -20,4 +20,4 @@ typedef struct AABB_t {
 
 uint8_t AreIntersecting(AABB stBoxA, AABB stBoxB);
 
-#endif
+#endif // _AABB_H_

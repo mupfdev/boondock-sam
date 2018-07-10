@@ -52,4 +52,4 @@ uint8_t IsMapCoordOfType(
     double      dPosX,
     double      dPosY);
 
-#endif
+#endif // _MAP_H_

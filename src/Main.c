@@ -47,16 +47,187 @@ typedef struct MainLoopBundle_t
     uint8_t     u8GameIsPaused;
 } MainLoopBundle;
 
+static void _MainLoop(void *pArg);
+
+int32_t main(int32_t s32ArgC, char *pacArgV[])
+{
+    Background     *pstBG[5]  = { NULL };
+    Sfx            *pstSfx[5] = { NULL };
+    MainLoopBundle *pstBundle = NULL;
+    Config          stConfig;
+    Entity         *pstSam    = NULL;
+    Map            *pstMap    = NULL;
+    Mixer          *pstMixer  = NULL;
+    Music          *pstMusic  = NULL;
+    Video          *pstVideo  = NULL;
+
+    if (s32ArgC > 1)
+    {
+        stConfig = InitConfig(pacArgV[1]);
+    }
+    else
+    {
+        #ifndef __EMSCRIPTEN__
+        stConfig = InitConfig("default.ini");
+        #else
+        stConfig = InitConfig("emscripten.ini");
+        #endif
+    }
+
+    pstVideo = InitVideo(
+        "Boondock Sam",
+        stConfig.stVideo.s32Width,
+        stConfig.stVideo.s32Height,
+        stConfig.stVideo.s8Fullscreen,
+        1 + stConfig.stVideo.s32Height / 216); // 216 = Background height.
+    if (NULL == pstVideo)
+    {
+        _s32ExecStatus = EXIT_FAILURE;
+        goto quit;
+    }
+    atexit(SDL_Quit);
+
+    pstMap = InitMap("res/maps/demo.tmx", "res/tilesets/jungle.png");
+    if (NULL == pstMap)
+    {
+        _s32ExecStatus = EXIT_FAILURE;
+        goto quit;
+    }
+
+    pstMixer = InitMixer();
+    if (NULL == pstMixer)
+    {
+        _s32ExecStatus = EXIT_FAILURE;
+        goto quit;
+    }
+    pstMusic = InitMusic("res/music/cheap_4track.ogg");
+    if (NULL == pstMusic)
+    {
+        _s32ExecStatus = EXIT_FAILURE;
+        goto quit;
+    }
+    if (pstMixer) { PlayMusic(pstMusic, -1); }
+
+    for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
+    {
+        const char *pacBackgroundList[5] = {
+            "res/backgrounds/plx-1.png",
+            "res/backgrounds/plx-2.png",
+            "res/backgrounds/plx-3.png",
+            "res/backgrounds/plx-4.png",
+            "res/backgrounds/plx-5.png"
+        };
+
+        pstBG[u8Index] = InitBackground(
+            pstVideo->pstRenderer,
+            pacBackgroundList[u8Index],
+            pstVideo->s32WindowWidth);
+
+        if (NULL == pstBG[u8Index])
+        {
+            _s32ExecStatus = EXIT_FAILURE;
+            goto quit;
+        }
+
+        pstBG[u8Index]->dWorldPosY = pstMap->u32Height - pstBG[u8Index]->s32Height;
+
+        const char *pacSfxList[5] = {
+            "res/sfx/dead1.wav",
+            "res/sfx/dead2.wav",
+            "res/sfx/jump.wav",
+            "res/sfx/pause.wav",
+            "res/sfx/unpause.wav"
+        };
+
+        pstSfx[u8Index] = InitSfx(pacSfxList[u8Index]);
+
+        if (NULL == pstSfx[u8Index])
+        {
+            _s32ExecStatus = EXIT_FAILURE;
+            goto quit;
+        }
+    }
+
+    pstSam = InitEntity(24, 40, 64, 568, pstMap->u32Width, pstMap->u32Height);
+    if (NULL == pstSam)
+    {
+        _s32ExecStatus = EXIT_FAILURE;
+        goto quit;
+    }
+    if (-1 == LoadEntitySprite(pstSam, pstVideo->pstRenderer, "res/sprites/sam.png"))
+    {
+        _s32ExecStatus = EXIT_FAILURE;
+        goto quit;
+    }
+
+    pstBundle = malloc(sizeof(struct MainLoopBundle_t));
+    if (NULL == pstBundle)
+    {
+        fprintf(stderr, "stBundle: error allocating memory.\n");
+        _s32ExecStatus = EXIT_FAILURE;
+        goto quit;
+    }
+
+    pstBundle->pstMap         = pstMap;
+    pstBundle->pstMusic       = pstMusic;
+    pstBundle->pstSam         = pstSam;
+    pstBundle->pstVideo       = pstVideo;
+    pstBundle->dTimeA         = SDL_GetTicks();
+    pstBundle->dCameraPosX    = 0;
+    pstBundle->dCameraPosY    = 0;
+    pstBundle->dCameraMaxPosX = 0;
+    pstBundle->dCameraMaxPosY = 0;
+    pstBundle->u8GameIsPaused = 0;
+
+    for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
+    {
+        pstBundle->pstBG[u8Index]  = pstBG[u8Index];
+        pstBundle->pstSfx[u8Index] = pstSfx[u8Index];
+    }
+
+    #ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop_arg(_MainLoop, (void *)pstBundle, 0, 1);
+    #else
+    while(1)
+    {
+        if (EXIT_UNSET != _s32ExecStatus) goto quit;
+        _MainLoop((void *)pstBundle);
+
+        if (stConfig.stVideo.s8LimitFPS)
+        {
+            SDL_Delay((1000 / stConfig.stVideo.s8FPS) - pstBundle->dDeltaTime);
+        }
+    }
+    #endif
+
+quit:
+    free(pstBundle);
+    free(pstSam);
+
+    for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
+    {
+        free(pstBG[u8Index]);
+        free(pstSfx[u8Index]);
+    }
+
+    FreeMixer(pstMixer);
+    free(pstMusic);
+    FreeMap(pstMap);
+    TerminateVideo(pstVideo);
+
+    return _s32ExecStatus;
+}
+
 static void _MainLoop(void *pArg)
 {
-    uint16_t        u16Flags  = 0;
-    MainLoopBundle *pstBundle = (MainLoopBundle *)pArg;
-    pstBundle->dTimeB         = SDL_GetTicks();
-    pstBundle->dDeltaTime     = (pstBundle->dTimeB - pstBundle->dTimeA) / 1000;
-    pstBundle->dTimeA         = pstBundle->dTimeB;
+    uint16_t        u16Flags   = 0;
+    const uint8_t  *u8KeyState = 0;
+    MainLoopBundle *pstBundle  = (MainLoopBundle *)pArg;
+    pstBundle->dTimeB          = SDL_GetTicks();
+    pstBundle->dDeltaTime      = (pstBundle->dTimeB - pstBundle->dTimeA) / 1000;
+    pstBundle->dTimeA          = pstBundle->dTimeB;
 
     // Process keyboard input.
-    const uint8_t *u8KeyState;
     SDL_PumpEvents();
     if (SDL_PeepEvents(0, 0, SDL_PEEKEVENT, SDL_QUIT, SDL_QUIT) > 0)
     {
@@ -312,172 +483,4 @@ static void _MainLoop(void *pArg)
         emscripten_cancel_main_loop();
     }
     #endif
-}
-
-int32_t main(int32_t s32ArgC, char *pacArgV[])
-{
-    Background     *pstBG[5]  = { NULL };
-    Sfx            *pstSfx[5] = { NULL };
-    MainLoopBundle *pstBundle = NULL;
-    Config          stConfig;
-    Entity         *pstSam    = NULL;
-    Map            *pstMap    = NULL;
-    Mixer          *pstMixer  = NULL;
-    Music          *pstMusic  = NULL;
-    Video          *pstVideo  = NULL;
-
-    if (s32ArgC > 1)
-    {
-        stConfig = InitConfig(pacArgV[1]);
-    }
-    else
-    {
-        #ifndef __EMSCRIPTEN__
-        stConfig = InitConfig("default.ini");
-        #else
-        stConfig = InitConfig("emscripten.ini");
-        #endif
-    }
-
-    pstVideo = InitVideo(
-        "Boondock Sam",
-        stConfig.stVideo.s32Width,
-        stConfig.stVideo.s32Height,
-        stConfig.stVideo.s8Fullscreen,
-        1 + stConfig.stVideo.s32Height / 216); // 216 = Background height.
-    if (NULL == pstVideo)
-    {
-        _s32ExecStatus = EXIT_FAILURE;
-        goto quit;
-    }
-    atexit(SDL_Quit);
-
-    pstMap = InitMap("res/maps/demo.tmx", "res/tilesets/jungle.png");
-    if (NULL == pstMap)
-    {
-        _s32ExecStatus = EXIT_FAILURE;
-        goto quit;
-    }
-
-    pstMixer = InitMixer();
-    if (NULL == pstMixer)
-    {
-        _s32ExecStatus = EXIT_FAILURE;
-        goto quit;
-    }
-    pstMusic = InitMusic("res/music/cheap_4track.ogg");
-    if (NULL == pstMusic)
-    {
-        _s32ExecStatus = EXIT_FAILURE;
-        goto quit;
-    }
-    if (pstMixer) { PlayMusic(pstMusic, -1); }
-
-    for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
-    {
-        const char *pacBackgroundList[5] = {
-            "res/backgrounds/plx-1.png",
-            "res/backgrounds/plx-2.png",
-            "res/backgrounds/plx-3.png",
-            "res/backgrounds/plx-4.png",
-            "res/backgrounds/plx-5.png"
-        };
-
-        pstBG[u8Index] = InitBackground(
-            pstVideo->pstRenderer,
-            pacBackgroundList[u8Index],
-            pstVideo->s32WindowWidth);
-
-        if (NULL == pstBG[u8Index])
-        {
-            _s32ExecStatus = EXIT_FAILURE;
-            goto quit;
-        }
-
-        pstBG[u8Index]->dWorldPosY = pstMap->u32Height - pstBG[u8Index]->s32Height;
-
-        const char *pacSfxList[5] = {
-            "res/sfx/dead1.wav",
-            "res/sfx/dead2.wav",
-            "res/sfx/jump.wav",
-            "res/sfx/pause.wav",
-            "res/sfx/unpause.wav"
-        };
-
-        pstSfx[u8Index] = InitSfx(pacSfxList[u8Index]);
-
-        if (NULL == pstSfx[u8Index])
-        {
-            _s32ExecStatus = EXIT_FAILURE;
-            goto quit;
-        }
-    }
-
-    pstSam = InitEntity(24, 40, 64, 568, pstMap->u32Width, pstMap->u32Height);
-    if (NULL == pstSam)
-    {
-        _s32ExecStatus = EXIT_FAILURE;
-        goto quit;
-    }
-    if (-1 == LoadEntitySprite(pstSam, pstVideo->pstRenderer, "res/sprites/sam.png"))
-    {
-        _s32ExecStatus = EXIT_FAILURE;
-        goto quit;
-    }
-
-    pstBundle = malloc(sizeof(struct MainLoopBundle_t));
-    if (NULL == pstBundle)
-    {
-        fprintf(stderr, "stBundle: error allocating memory.\n");
-        _s32ExecStatus = EXIT_FAILURE;
-        goto quit;
-    }
-
-    pstBundle->pstMap         = pstMap;
-    pstBundle->pstMusic       = pstMusic;
-    pstBundle->pstSam         = pstSam;
-    pstBundle->pstVideo       = pstVideo;
-    pstBundle->dTimeA         = SDL_GetTicks();
-    pstBundle->dCameraPosX    = 0;
-    pstBundle->dCameraPosY    = 0;
-    pstBundle->dCameraMaxPosX = 0;
-    pstBundle->dCameraMaxPosY = 0;
-    pstBundle->u8GameIsPaused = 0;
-
-    for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
-    {
-        pstBundle->pstBG[u8Index]  = pstBG[u8Index];
-        pstBundle->pstSfx[u8Index] = pstSfx[u8Index];
-    }
-
-    #ifdef __EMSCRIPTEN__
-    emscripten_set_main_loop_arg(_MainLoop, (void *)pstBundle, 0, 1);
-    #else
-    while(1)
-    {
-        if (EXIT_UNSET != _s32ExecStatus) goto quit;
-        _MainLoop((void *)pstBundle);
-
-        if (stConfig.stVideo.s8LimitFPS)
-        {
-            SDL_Delay((1000 / stConfig.stVideo.s8FPS) - pstBundle->dDeltaTime);
-        }
-    }
-    #endif
-
-quit:
-    for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
-    {
-        free(pstBG[u8Index]);
-        free(pstSfx[u8Index]);
-    }
-
-    FreeMap(pstMap);
-    FreeMixer(pstMixer);
-    free(pstBundle);
-    free(pstMusic);
-    free(pstSam);
-    TerminateVideo(pstVideo);
-
-    return _s32ExecStatus;
 }

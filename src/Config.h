@@ -28,4 +28,4 @@ typedef struct Config_t {
 
 Config InitConfig(const char *pcFilename);
 
-#endif
+#endif // _CONFIG_H_

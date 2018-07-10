@@ -42,4 +42,4 @@ Background *InitBackground(
     const char   *pacFilename,
     int32_t       s32WindowWidth);
 
-#endif
+#endif // _BACKGROUND_H_

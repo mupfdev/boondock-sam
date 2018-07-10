@@ -13,4 +13,4 @@
 #define FLAG_SET(number, bit)        (number) |= 1 << (bit)
 #define FLAG_TOGGLE(number, bit)     (number) ^= 1 << (bit)
 
-#endif
+#endif // _MACROS_H_

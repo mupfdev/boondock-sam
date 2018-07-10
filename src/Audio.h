@@ -54,4 +54,4 @@ int8_t PlaySfx(
 
 void ToggleMusic();
 
-#endif
+#endif // _AUDIO_H_

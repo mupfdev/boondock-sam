@@ -42,4 +42,4 @@ int8_t SetVideoZoomLevel(Video *pstVideo, double dZoomLevel);
 void   TerminateVideo(Video *pstVideo);
 void   UpdateVideo(SDL_Renderer *pstRenderer);
 
-#endif
+#endif // _VIDEO_H_
