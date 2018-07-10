@@ -32,19 +32,19 @@ static  int32_t _s32ExecStatus = EXIT_UNSET;
 typedef struct MainLoopBundle_t
 {
     Background *pstBG[5];
-    Sfx        *pstSfx[5];
-    Entity     *pstSam;
     Map        *pstMap;
     Music      *pstMusic;
+    Entity     *pstSam;
+    Sfx        *pstSfx[5];
     Video      *pstVideo;
-    double      dTimeA;
-    double      dTimeB;
     double      dDeltaTime;
     double      dCameraPosX;
     double      dCameraPosY;
     double      dCameraMaxPosX;
     double      dCameraMaxPosY;
     uint8_t     u8GameIsPaused;
+    double      dTimeA;
+    double      dTimeB;
 } MainLoopBundle;
 
 static void _MainLoop(void *pArg);
@@ -52,14 +52,14 @@ static void _MainLoop(void *pArg);
 int32_t main(int32_t s32ArgC, char *pacArgV[])
 {
     Background     *pstBG[5]  = { NULL };
-    Sfx            *pstSfx[5] = { NULL };
     MainLoopBundle *pstBundle = NULL;
-    Config          stConfig;
-    Entity         *pstSam    = NULL;
     Map            *pstMap    = NULL;
     Mixer          *pstMixer  = NULL;
     Music          *pstMusic  = NULL;
+    Entity         *pstSam    = NULL;
+    Sfx            *pstSfx[5] = { NULL };
     Video          *pstVideo  = NULL;
+    Config          stConfig;
 
     if (s32ArgC > 1)
     {
@@ -103,6 +103,7 @@ int32_t main(int32_t s32ArgC, char *pacArgV[])
     pstMusic = InitMusic("res/music/cheap_4track.ogg");
     if (NULL == pstMusic)
     {
+
         _s32ExecStatus = EXIT_FAILURE;
         goto quit;
     }
@@ -168,16 +169,16 @@ int32_t main(int32_t s32ArgC, char *pacArgV[])
         goto quit;
     }
 
-    pstBundle->pstMap         = pstMap;
-    pstBundle->pstMusic       = pstMusic;
-    pstBundle->pstSam         = pstSam;
-    pstBundle->pstVideo       = pstVideo;
-    pstBundle->dTimeA         = SDL_GetTicks();
     pstBundle->dCameraPosX    = 0;
     pstBundle->dCameraPosY    = 0;
     pstBundle->dCameraMaxPosX = 0;
     pstBundle->dCameraMaxPosY = 0;
+    pstBundle->dTimeA         = SDL_GetTicks();
     pstBundle->u8GameIsPaused = 0;
+    pstBundle->pstMap         = pstMap;
+    pstBundle->pstMusic       = pstMusic;
+    pstBundle->pstSam         = pstSam;
+    pstBundle->pstVideo       = pstVideo;
 
     for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
     {
@@ -201,18 +202,17 @@ int32_t main(int32_t s32ArgC, char *pacArgV[])
     #endif
 
 quit:
-    free(pstBundle);
-    free(pstSam);
-
     for (uint8_t u8Index = 0; u8Index < 5; u8Index++)
     {
         free(pstBG[u8Index]);
         free(pstSfx[u8Index]);
     }
 
+    free(pstBundle);
+    FreeMap(pstMap);
     FreeMixer(pstMixer);
     free(pstMusic);
-    FreeMap(pstMap);
+    free(pstSam);
     TerminateVideo(pstVideo);
 
     return _s32ExecStatus;
