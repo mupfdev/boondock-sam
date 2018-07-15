@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.0" tiledversion="1.1.2" orientation="orthogonal" renderorder="right-down" width="50" height="50" tilewidth="16" tileheight="16" infinite="0" backgroundcolor="#2b5754" nextobjectid="1">
+<map version="1.0" tiledversion="1.1.2" orientation="orthogonal" renderorder="right-down" width="70" height="50" tilewidth="16" tileheight="16" infinite="0" backgroundcolor="#2b5754" nextobjectid="1">
  <tileset firstgid="1" source="../tilesets/jungle.tsx"/>
- <layer name="Background" width="50" height="50">
+ <layer name="Background" width="70" height="50">
   <data encoding="base64" compression="zlib">
-   eJztl2FKxDAQhZseQImioifJinoe7yF2WRbcq6g/vMrqCRRXVPQCTmDCDrFpa5smFt4HQ/8k6czLm9luUQAAAAAAAAAAAAAAAMbmTeXOYDjPVMOsLIqN2tZzVebNqQ87nLOh594E869DUx1LruVVDfPbNUVFMY+R2B/RfCfWY/a5n/B+LiO+y3nrkKNvHV38aXvwnfT6UFvdNgM9IDFcg7yPLlrd8p5Q1GlywO+aiTiNeC9avN9p1cSC137R2m/VXofT5Yye5xQX3vkx5uUNnbGqyaPpvte85pjiROxxGktNbMTUvAnToKf0mNRNe/nLXOV5qWrwMeVvj1UUcy8fXYb9487xa4g5o7pghD+OAl5ee3UseM9SrJfzycZKeC3lt9FDi36u3orruaO4F3vq5pOLlL9VPvbb7CWgo72fR4onkV9oPlmsL0NnjY39NtutyanP3HT95ffd1DAZvOX69TOyD9r6LzauX/3ZlYI+GoZ83tSvY5NTw5jk1DAWU/y/DcB/4QfBEUcc
+   eJztl+1NwzAQhuMMAAoVIJjERYV52AORqqpEVwF+sEphAhBFgGABztJZPRnbidK0cdL3kU75Y7u+977qLAMAAAAAAAAAAAAAAAAAAAAAVPGhur5BerySJuM8y1Zqrc9N3u2dUuCANdD0PYIeXgrSZc7avKvN6uuWrCSbtnGxjik4Z0xNme9oh/lznXCu2lo6YWuqS516ND3sk/T/Uus4rDbM0W2iWROZL3Viec97QubT+Jh/ayzsIuG8KYQ/NpYxZrz2h9b+qmpdrM4T+l6SXTnnpzgP7+hOC49fsfxe8pozsnOxx+aA1NhYyjkRQ0fiLWtKxrVw9JC+y/P6qomLzv/XVEk2dfwr8nC92HNcTVKeQXXQoh5OA71g6egy4z1zsV7OH2MLUVupzqE6PFXE1+pXsj4PZI9ij2/+WNvlf6VtY95Wb4E4m/x5JnsR/obmj8HUYeisvmHeVoceH5vMWduf3L617+gB1JLtn98t531V/0od2z/d2dRHmsQ41Cdi/bNvDCnGbTKkGLdFiu9TAMB+8Ac5Vkcc
   </data>
  </layer>
- <layer name="Background" width="50" height="50">
+ <layer name="Background" width="70" height="50">
   <data encoding="base64" compression="zlib">
-   eJzt1clOFFEYhuHTJUQUF4Bu4ApUCCSwUHGLCxmEljQJLpQ9QhC1QcMgC2ABbEADOKyUYQ1cA3eAA4Nh0BvQLYNvJYfUCXRXaKqqq03/X/LkdIrqqv9LDqeVkkgkEolEIpFIJBKJRCKRSLIrBXotCnUK77mF27gT9iAe8xhP0BbyHF4zjBGMhj2IS+5HlKpFHeq1k6mPnNaAB2hMcH8Y6WKOZ+jGc22M6+PahHKum17gJeIZ0mOaOWYwi/faEteXtRXlXDd9wEd8ypAeCWPMZmXynJKsSxH78ap27T/cmzXMfJP1Hmu1djfAHoVWMM9tZ+ZV1qdp6hF07D52lw50nqPHGt/5im/4jh9YxwY2sYWfKOXeMt+ndzLJO6bwFu/O0OO6nn1Nz76PAxziyP4++ycCCxeQg1w85E/NAfZINY1oUs7svepsXuG1TzOUo8LjM+LoUYln3abXDnaxh1/4HfG/RwwtHp/h1uMi+ycPl3AZ+bhi+d/Dj7j1KGfmCuN8reRzldHjD/6me+AkcesRY+YWo0crnx8ZPYrZYyX6d8uW7Ayzz5IbyrnP7d4gevQxcz8GMIg3GNI9PrN+Mc6vqEp+hh2fJVGD3+edW4/jWecwjwUsWqmfYYne4ff/l1uPVEkP6ZHsHf8AOLqcFg==
+   eJztlk1PE0EYgKcLBhEPgFzwF6iQNsEDglc5ANVSTZvAQb0rBhALGkE8qAf04kcU0JMKnJXfwD8ofhs+5A/oFZRnwzSdSLuxyXZ3qO+TPJlmu9nOPMnsVClBEARBEARBEARBEARBEARBEARBKC/1emwMdRb20Y6nsCPsiVjGRbyEl0Oeh23cw/v4IOyJBEh3RKke7MW49m/ikb2exXOYKHB/JTDEuoZxBK9rp7n+UPtI5a+bjuINzFRol+es6wXO4Kz2Hdffa5dU/rrpHL7EVxXapSDGWp3/ad2CYBmN7L8j2ibZi+oMDU4wdjF2ak/voy4NTnmee4UGy4xX92mXcuP2cdsM4jULumSZwwp+wI/4CT/jF/yK3/A7tnBvaxnn8ZjfeIJP8VkIXY6p3RZZ3WILt/E3/nHnw36JoINVWI0H8DxfXQh+uoGRwD6VbzGu/s2beMunOUQx5tOz/CKDY6rw2lfptIbruIE/cDPif5cUpn16ll94dalhvxzEWjyEdXjY8b+LjXh1idIgZpzHbXw+aXT5ib+CnnBAeHVJ0SBtdOnn84DRpZk9dVT/D3Mtdka57/bjKn+f17224NXlNg0mcBLv4BTe1V1eM74xzqekKn5G5d7tSUPbzzOvLrm1v8V5XMBFp/QzqtBv2P5+8upSqtJFukiXXXcAnAKcFg==
   </data>
  </layer>
- <layer name="Foreground" width="50" height="50">
+ <layer name="Foreground" width="70" height="50">
   <data encoding="base64" compression="zlib">
-   eJztkz1SwkAcR8MBRG3AI8jAaKNCox4BSUYbP2jQIyhQqmjjHdDSrzvyktkiw9hIdv3POr8389rN+yWbJBFCCCGEEEIIIYQQ4mca2HRuGbdU4RCPnMfGLVUY4bXzxrilCjN8cT4bt1Thv+wo36uRcYsQO7hrHeGBUzyzjhBBWK8lyQZu1qxLVmON7joeYBd7ke7Yo3sfL/EKh5HuOKf7Ah9xhk8BdmxjC9vY8X98wT3dD/iJX/gdYEcfTzDFzP/xBe90fwS+S7d4hxOchn1UUHzvGPDe05LZH/3TvneM6Z6U2qeR7pgvfYNYd+SMtWNlQuzI79ar8y3iHRZox+9ZALwBMI0=
+   eJzt1EsuBFEcRvHqBXhNsARCmHhNsAR0h0l7TJol0N1DNBN7wNBrj47KTVSkRlLXvR3nl5xp9T9fqrooJEmSJEmSJEmS9FuzNBeaT3xLTrZpJ7Sb+Jac9Og8dJH4lpyM6CF0n/iWnLhLvep31Et8i/TfrNBq6iMydEhHqY+QGjDVKoppmmmlviQPE+wwSRu0SVvuUlpjh3U6oVM6c5dSlx2O6ZZGdBdhlwVapCVabv7xUVyzww290Tt9RNhlj/apTZ3mHx/FCzu8Rv52LumKBjSM+1NjJfddDngv2pU6f/Qfm/sufXYYVLYYukvp8cc74i7f+u5Sy13qfX1LT6Fnd0nKXeqN8y6f8XIwjQ==
   </data>
  </layer>
 </map>
